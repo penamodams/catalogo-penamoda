@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeNaModa - Catálogo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Estilos básicos para ficar bonito */
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header img { max-width: 200px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden; text-align: center; padding-bottom: 15px; }
+        .card img { width: 100%; height: 300px; object-fit: cover; }
+        .card h3 { font-size: 16px; margin: 10px 0; color: #333; }
+        .price { font-size: 20px; font-weight: bold; color: #d4af37; margin: 10px 0; }
+        .sizes { margin: 10px 0; }
+        .size-btn { border: 1px solid #ccc; background: #fff; padding: 5px 10px; margin: 2px; cursor: pointer; border-radius: 4px; }
+        .size-btn.selected { background: #333; color: white; border-color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>PeNaModa</h1>
+    </div>
+
+    <div class="grid" id="catalogo">
+        <!-- Os produtos vão aparecer aqui -->
+    </div>
+
+    <script>
+               // 1. SUAS CHAVES DO SUPABASE
+        const SUPABASE_URL = 'https://izperhbkeanrfflcdtkd.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_juaoZjOGkOV2zDuGKxkYpg_qG0pIEBk'; 
+        
+        // 2. LINK DO SEU GITHUB PAGES
+        const GITHUB_IMAGES_URL = 'https://penamodams.github.io/catalogo-penamoda/'; 
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function carregarProdutos() {
+            const { data: produtos, error } = await _supabase
+                .from('produtos')
+                .select('*');
+
+            if (error) {
+                console.error('Erro ao buscar produtos:', error);
+                return;
+            }
+
+            const container = document.getElementById('catalogo');
+            container.innerHTML = ''; // Limpa o container
+
+            produtos.forEach(produto => {
+                // Cria o card do produto
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                // Monta os botões de tamanho
+                let sizesHtml = '';
+                if (produto.tamanhos) {
+                    // Separa por vírgula e limpa espaços extras
+                    const tamanhosArray = produto.tamanhos.split(',').map(t => t.trim());
+                    tamanhosArray.forEach(tam => {
+                        sizesHtml += `<button class="size-btn" onclick="selecionarTamanho(this)">${tam}</button>`;
+                    });
+                }
+
+                // Formata o preço para Real
+                const precoFormatado = parseFloat(produto.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                // Monta o HTML interno do card
+                card.innerHTML = `
+                    <img src="${GITHUB_IMAGES_URL}${produto.foto}" alt="${produto.descricao}">
+                    <h3>${produto.descricao}</h3>
+                    <div class="price">${precoFormatado}</div>
+                    <div class="sizes">${sizesHtml}</div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Função para marcar o tamanho selecionado
+        function selecionarTamanho(botao) {
+            // Remove a seleção dos outros botões do mesmo card
+            const botoes = botao.parentElement.querySelectorAll('.size-btn');
+            botoes.forEach(btn => btn.classList.remove('selected'));
+            // Adiciona a seleção no botão clicado
+            botao.classList.add('selected');
+        }
+
+        // Chama a função assim que a página carregar
+        carregarProdutos();
+    </script>
+</body>
+</html>
