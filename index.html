@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <style>
     :root {
       color-scheme: light;
@@ -22,328 +22,290 @@
       --bg: #fff;
       --radius: 8px;
     }
-
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
-      color: var(--ink);
-      background: var(--bg);
-      line-height: 1.45;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .header {
-      padding: 2.5rem 1rem 1.5rem;
-      text-align: center;
-      border-bottom: 1px solid var(--line);
-    }
-    .header h1 {
-      margin: 0;
-      font-size: clamp(2.25rem, 8vw, 3.5rem);
-      font-weight: 800;
-      letter-spacing: -.03em;
-      line-height: 1;
-    }
+    body { margin: 0; font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); line-height: 1.45; -webkit-font-smoothing: antialiased; }
+    .header { position: relative; padding: 2.5rem 1rem 1.5rem; text-align: center; border-bottom: 1px solid var(--line); }
+    .header h1 { margin: 0; font-size: clamp(2.25rem, 8vw, 3.5rem); font-weight: 800; letter-spacing: -.03em; line-height: 1; }
     .header h1 span { color: var(--red); }
     .header p { margin: .6rem 0 0; color: var(--muted); }
-
+    .cart-open { position: absolute; top: 1rem; right: max(1rem, calc((100vw - 1200px) / 2)); padding: .65rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+    .cart-count { display: inline-grid; min-width: 1.45rem; height: 1.45rem; margin-left: .3rem; padding: 0 .25rem; place-items: center; border-radius: 999px; color: #fff; background: var(--red); font-size: .8rem; }
     main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
-      gap: 1.5rem 1rem;
-    }
-    @media (min-width: 700px) {
-      .grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2rem 1.25rem; }
-    }
-
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); gap: 1.5rem 1rem; }
+    @media (min-width: 700px) { .grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2rem 1.25rem; } }
     .card { display: flex; min-width: 0; flex-direction: column; }
     .photo { aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius); background: var(--soft); }
     .photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
     .card h2 { margin: .75rem 0 0; font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
     .price { margin-top: .2rem; color: var(--red); font-size: 1.2rem; font-weight: 800; }
-
     .sizes { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
-    .size-btn {
-      min-width: 2.75rem;
-      min-height: 2.75rem;
-      padding: 0 .6rem;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      color: var(--ink);
-      background: var(--bg);
-      font: inherit;
-      font-size: .9rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .size-btn { min-width: 2.75rem; min-height: 2.75rem; padding: 0 .6rem; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--bg); font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; }
     .size-btn:hover { border-color: var(--ink); }
     .size-btn[aria-pressed="true"] { border-color: var(--ink); color: #fff; background: var(--ink); }
-
-    .buy {
-      display: block;
-      margin-top: .9rem;
-      padding: .75rem 1rem;
-      border-radius: 6px;
-      color: #fff;
-      background: var(--red);
-      font-size: .95rem;
-      font-weight: 600;
-      text-align: center;
-      text-decoration: none;
-    }
-    .buy:hover { background: var(--red-hover); }
-
+    .add-cart, .checkout { display: block; width: 100%; margin-top: .9rem; padding: .75rem 1rem; border: 0; border-radius: 6px; color: #fff; background: var(--red); font: inherit; font-size: .95rem; font-weight: 600; text-align: center; text-decoration: none; cursor: pointer; }
+    .add-cart:hover, .checkout:hover { background: var(--red-hover); }
+    .card-notice { min-height: 1.3em; margin: .35rem 0 0; color: var(--muted); font-size: .85rem; }
     :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-
-    .skeleton .photo, .skeleton .line {
-      background: linear-gradient(90deg, var(--soft) 25%, #fff 50%, var(--soft) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite linear;
-    }
+    .skeleton .photo, .skeleton .line { background: linear-gradient(90deg, var(--soft) 25%, #fff 50%, var(--soft) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; }
     .skeleton .line { width: 70%; height: 1rem; margin-top: .75rem; border-radius: 4px; }
     .skeleton .line.short { width: 35%; }
     @keyframes shimmer { to { background-position: -200% 0; } }
-
     .state { grid-column: 1 / -1; padding: 3rem 1rem; color: var(--muted); text-align: center; }
     .state strong { display: block; margin-bottom: .4rem; color: var(--ink); font-size: 1.15rem; }
-    .state button {
-      margin-top: 1rem;
-      padding: .75rem 1.4rem;
-      border: 0;
-      border-radius: 6px;
-      color: #fff;
-      background: var(--ink);
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .state button:hover { background: #3b3b3e; }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; }
-      .skeleton .photo, .skeleton .line { animation: none; }
-    }
+    .state button { margin-top: 1rem; padding: .75rem 1.4rem; border: 0; border-radius: 6px; color: #fff; background: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+    dialog { width: min(94vw, 560px); max-height: 85vh; padding: 0; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); box-shadow: 0 20px 70px #0003; }
+    dialog::backdrop { background: #0007; }
+    .cart-panel { padding: 1.25rem; }
+    .cart-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+    .cart-heading h2 { margin: 0; font-size: 1.35rem; }
+    .icon-button { min-width: 2.5rem; min-height: 2.5rem; border: 1px solid var(--line); border-radius: 50%; background: #fff; font: inherit; font-size: 1.25rem; cursor: pointer; }
+    .cart-items { display: grid; max-height: 48vh; overflow-y: auto; }
+    .cart-empty { padding: 2rem 0; color: var(--muted); text-align: center; }
+    .cart-item { display: grid; grid-template-columns: 1fr auto; gap: .75rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+    .cart-item h3 { margin: 0 0 .2rem; font-size: 1rem; }
+    .cart-item p { margin: .15rem 0; color: var(--muted); font-size: .9rem; }
+    .cart-item-price { color: var(--ink) !important; font-weight: 700; }
+    .cart-controls { display: flex; align-items: center; gap: .4rem; }
+    .quantity-button, .remove-button { min-width: 2rem; min-height: 2rem; border: 1px solid var(--line); border-radius: 5px; background: #fff; font: inherit; cursor: pointer; }
+    .remove-button { color: var(--red); }
+    .cart-summary { padding-top: 1rem; }
+    .cart-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; }
+    .cart-help { margin: .6rem 0 0; color: var(--muted); font-size: .9rem; }
+    .checkout:disabled { background: #aaa; cursor: not-allowed; }
+    @media (max-width: 480px) { .header { padding-top: 4rem; } .cart-open { top: .75rem; right: .75rem; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } .skeleton .photo, .skeleton .line { animation: none; } }
   </style>
 </head>
 <body>
   <header class="header">
+    <button class="cart-open" id="abrir-carrinho" type="button" aria-haspopup="dialog" aria-controls="carrinho">🛒 Carrinho <span class="cart-count" id="quantidade-carrinho" aria-label="0 itens">0</span></button>
     <h1>Pe<span>Na</span>Moda</h1>
-    <p>Escolha o tamanho e peça pelo WhatsApp</p>
+    <p>Escolha o tamanho, adicione ao carrinho e finalize seu pedido</p>
   </header>
 
   <main>
     <div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
   </main>
 
+  <dialog id="carrinho" aria-labelledby="titulo-carrinho">
+    <section class="cart-panel">
+      <div class="cart-heading">
+        <h2 id="titulo-carrinho">Seu carrinho</h2>
+        <button class="icon-button" id="fechar-carrinho" type="button" aria-label="Fechar carrinho">×</button>
+      </div>
+      <div class="cart-items" id="itens-carrinho" aria-live="polite"></div>
+      <div class="cart-summary">
+        <div class="cart-total"><span>Total</span><span id="total-carrinho">R$ 0,00</span></div>
+        <p class="cart-help" id="aviso-checkout"></p>
+        <button class="checkout" id="finalizar-pedido" type="button">Finalizar pedido pelo WhatsApp</button>
+      </div>
+    </section>
+  </dialog>
+
   <script>
     'use strict';
 
-    // A chave publishable/anon é pública por definição. Restrinja o acesso aos dados
-    // usando as políticas RLS do Supabase; nunca coloque uma service_role key aqui.
+    // A chave publishable/anon é pública por definição. Restrinja os dados com RLS no Supabase;
+    // nunca coloque uma service_role key no navegador.
     const SUPABASE_URL = 'https://lzperhbkeanfrflcdtkd.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_juaoZjOGkOV2zDuGKxkYpg_qG0pIEBk';
     const GITHUB_IMAGES_URL = 'https://penamodams.github.io/catalogo-penamoda/';
-    const WHATSAPP = ''; // DDI + DDD + número, somente dígitos. Ex.: '5567999999999'. Vazio = oculta o botão.
+    const WHATSAPP = ''; // Configure DDI + DDD + número, somente dígitos. Ex.: '5567999999999'.
     const REQUEST_TIMEOUT_MS = 15000;
-
+    const CART_STORAGE_KEY = 'penamoda-carrinho-v1';
     const container = document.getElementById('catalogo');
+    const dialog = document.getElementById('carrinho');
+    const cartItemsElement = document.getElementById('itens-carrinho');
+    const totalElement = document.getElementById('total-carrinho');
+    const cartCountElement = document.getElementById('quantidade-carrinho');
+    const telefoneWhatsApp = String(WHATSAPP).replace(/\D/g, '');
     const SEM_FOTO = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500"><rect width="400" height="500" fill="#f3f2f1"/><text x="200" y="250" fill="#6b6b70" font-family="sans-serif" font-size="20" text-anchor="middle">Foto em breve</text></svg>'
     );
-    const telefoneWhatsApp = String(WHATSAPP).replace(/\D/g, '');
 
     function criarClienteSupabase() {
       if (!window.supabase || typeof window.supabase.createClient !== 'function') return null;
-      try {
-        return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      } catch (error) {
-        console.error('Não foi possível inicializar o Supabase:', error);
-        return null;
-      }
+      try { return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+      catch (error) { console.error('Não foi possível inicializar o Supabase:', error); return null; }
     }
-
     const db = criarClienteSupabase();
 
     function formatarPreco(valor) {
       if (valor === null || valor === undefined || String(valor).trim() === '') return 'Consulte';
       const numero = Number(valor);
-      return Number.isFinite(numero)
-        ? numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-        : 'Consulte';
+      return Number.isFinite(numero) ? numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Consulte';
     }
-
     function obterTamanhos(valor) {
       const itens = Array.isArray(valor) ? valor : String(valor ?? '').split(',');
       return [...new Set(itens.map((tamanho) => String(tamanho).trim()).filter(Boolean))];
     }
-
-    // Os nomes de imagem devem ser caminhos relativos dentro do repositório de imagens.
-    // Codifica cada segmento e impede que caminhos ../ saiam da pasta publicada.
     function urlDaFoto(nome) {
       const segmentos = String(nome ?? '').replaceAll('\\', '/').split('/').filter(Boolean);
       if (!segmentos.length || segmentos.some((parte) => parte === '.' || parte === '..')) return SEM_FOTO;
       return GITHUB_IMAGES_URL + segmentos.map(encodeURIComponent).join('/');
     }
-
+    function carregarCarrinhoSalvo() {
+      try {
+        const salvo = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+        if (!Array.isArray(salvo)) return [];
+        return salvo.filter((item) => item && typeof item.name === 'string' && typeof item.size === 'string' && Number.isFinite(item.price) && item.price >= 0 && Number.isInteger(item.quantity) && item.quantity > 0);
+      } catch (error) {
+        console.warn('Não foi possível restaurar o carrinho salvo.', error);
+        return [];
+      }
+    }
+    let carrinho = carregarCarrinhoSalvo();
+    function salvarCarrinho() {
+      try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(carrinho)); }
+      catch (error) { console.warn('Não foi possível salvar o carrinho neste navegador.', error); }
+    }
     function mostrarCarregando() {
       container.setAttribute('aria-busy', 'true');
       container.replaceChildren(...Array.from({ length: 8 }, () => {
-        const card = document.createElement('div');
-        card.className = 'card skeleton';
-        card.setAttribute('aria-hidden', 'true');
-        const foto = document.createElement('div');
-        foto.className = 'photo';
-        const linha = document.createElement('div');
-        linha.className = 'line';
-        const linhaCurta = document.createElement('div');
-        linhaCurta.className = 'line short';
-        card.append(foto, linha, linhaCurta);
-        return card;
+        const card = document.createElement('div'); card.className = 'card skeleton'; card.setAttribute('aria-hidden', 'true');
+        const foto = document.createElement('div'); foto.className = 'photo';
+        const linha = document.createElement('div'); linha.className = 'line';
+        const linhaCurta = document.createElement('div'); linhaCurta.className = 'line short';
+        card.append(foto, linha, linhaCurta); return card;
       }));
     }
-
     function mostrarMensagem(titulo, texto, comBotao = false) {
       container.setAttribute('aria-busy', 'false');
-      const estado = document.createElement('div');
-      estado.className = 'state';
-      estado.setAttribute('role', 'status');
-      const tituloElemento = document.createElement('strong');
-      tituloElemento.textContent = titulo;
-      const textoElemento = document.createElement('span');
-      textoElemento.textContent = texto;
-      estado.append(tituloElemento, textoElemento);
-
+      const estado = document.createElement('div'); estado.className = 'state'; estado.setAttribute('role', 'status');
+      const heading = document.createElement('strong'); heading.textContent = titulo;
+      const body = document.createElement('span'); body.textContent = texto;
+      estado.append(heading, body);
       if (comBotao) {
-        const botao = document.createElement('button');
-        botao.type = 'button';
-        botao.textContent = 'Tentar de novo';
-        botao.addEventListener('click', carregarProdutos);
-        estado.append(document.createElement('br'), botao);
+        const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Tentar de novo';
+        retry.addEventListener('click', carregarProdutos); estado.append(document.createElement('br'), retry);
       }
       container.replaceChildren(estado);
     }
-
     function criarCard(produto, indice) {
       const descricao = String(produto.descricao ?? '').trim() || 'Produto sem nome';
-      const preco = formatarPreco(produto.valor);
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.dataset.nome = descricao;
-      card.dataset.preco = preco;
-
-      const molduraFoto = document.createElement('div');
-      molduraFoto.className = 'photo';
-      const imagem = document.createElement('img');
-      imagem.src = produto.foto ? urlDaFoto(produto.foto) : SEM_FOTO;
-      imagem.alt = descricao;
-      imagem.width = 400;
-      imagem.height = 500;
-      imagem.decoding = 'async';
+      const numeroPreco = Number(produto.valor);
+      const precoValido = produto.valor !== null && produto.valor !== undefined && String(produto.valor).trim() !== '' && Number.isFinite(numeroPreco) && numeroPreco >= 0;
+      const card = document.createElement('article'); card.className = 'card';
+      card.dataset.nome = descricao; card.dataset.preco = precoValido ? String(numeroPreco) : '';
+      const moldura = document.createElement('div'); moldura.className = 'photo';
+      const imagem = document.createElement('img'); imagem.src = produto.foto ? urlDaFoto(produto.foto) : SEM_FOTO;
+      imagem.alt = descricao; imagem.width = 400; imagem.height = 500; imagem.decoding = 'async';
       if (indice >= 4) imagem.loading = 'lazy';
-      imagem.addEventListener('error', () => {
-        if (imagem.src !== SEM_FOTO) imagem.src = SEM_FOTO;
-      });
-      molduraFoto.append(imagem);
-
-      const titulo = document.createElement('h2');
-      titulo.textContent = descricao;
-      const precoElemento = document.createElement('p');
-      precoElemento.className = 'price';
-      precoElemento.textContent = preco;
-      card.append(molduraFoto, titulo, precoElemento);
-
+      imagem.addEventListener('error', () => { if (imagem.src !== SEM_FOTO) imagem.src = SEM_FOTO; }); moldura.append(imagem);
+      const titulo = document.createElement('h2'); titulo.textContent = descricao;
+      const preco = document.createElement('p'); preco.className = 'price'; preco.textContent = formatarPreco(produto.valor);
+      card.append(moldura, titulo, preco);
       const tamanhos = obterTamanhos(produto.tamanhos);
       if (tamanhos.length) {
-        const grupo = document.createElement('div');
-        grupo.className = 'sizes';
-        grupo.setAttribute('role', 'group');
-        grupo.setAttribute('aria-label', `Tamanhos de ${descricao}`);
+        const grupo = document.createElement('div'); grupo.className = 'sizes'; grupo.setAttribute('role', 'group'); grupo.setAttribute('aria-label', `Escolha o tamanho de ${descricao}`);
         tamanhos.forEach((tamanho) => {
-          const botao = document.createElement('button');
-          botao.type = 'button';
-          botao.className = 'size-btn';
-          botao.setAttribute('aria-pressed', 'false');
-          botao.textContent = tamanho;
-          grupo.append(botao);
+          const botao = document.createElement('button'); botao.type = 'button'; botao.className = 'size-btn'; botao.setAttribute('aria-pressed', 'false'); botao.textContent = tamanho; grupo.append(botao);
         });
         card.append(grupo);
       }
-
-      if (telefoneWhatsApp) {
-        const link = document.createElement('a');
-        link.className = 'buy';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = 'Pedir no WhatsApp';
-        atualizarLink(card, link);
-        card.append(link);
-      }
+      const adicionar = document.createElement('button'); adicionar.type = 'button'; adicionar.className = 'add-cart';
+      adicionar.textContent = 'Adicionar ao carrinho'; adicionar.disabled = !precoValido;
+      if (!precoValido) adicionar.title = 'Produto sem preço válido';
+      const aviso = document.createElement('p'); aviso.className = 'card-notice'; aviso.setAttribute('aria-live', 'polite');
+      card.append(adicionar, aviso);
       return card;
     }
-
-    function atualizarLink(card, link = card.querySelector('.buy')) {
-      if (!link) return;
+    function renderizarCarrinho() {
+      cartItemsElement.replaceChildren();
+      if (!carrinho.length) {
+        const empty = document.createElement('p'); empty.className = 'cart-empty'; empty.textContent = 'Seu carrinho está vazio. Escolha um produto para começar.'; cartItemsElement.append(empty);
+      }
+      carrinho.forEach((item, index) => {
+        const row = document.createElement('article'); row.className = 'cart-item';
+        const details = document.createElement('div');
+        const name = document.createElement('h3'); name.textContent = item.name;
+        const size = document.createElement('p'); size.textContent = `Tamanho: ${item.size}`;
+        const price = document.createElement('p'); price.className = 'cart-item-price'; price.textContent = `${formatarPreco(item.price)} cada`;
+        details.append(name, size, price);
+        const controls = document.createElement('div'); controls.className = 'cart-controls';
+        const decrease = document.createElement('button'); decrease.type = 'button'; decrease.className = 'quantity-button'; decrease.dataset.action = 'decrease'; decrease.dataset.index = String(index); decrease.setAttribute('aria-label', `Diminuir quantidade de ${item.name}`); decrease.textContent = '−';
+        const quantity = document.createElement('span'); quantity.textContent = String(item.quantity); quantity.setAttribute('aria-label', `Quantidade ${item.quantity}`);
+        const increase = document.createElement('button'); increase.type = 'button'; increase.className = 'quantity-button'; increase.dataset.action = 'increase'; increase.dataset.index = String(index); increase.setAttribute('aria-label', `Aumentar quantidade de ${item.name}`); increase.textContent = '+';
+        const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'remove-button'; remove.dataset.action = 'remove'; remove.dataset.index = String(index); remove.setAttribute('aria-label', `Remover ${item.name} do carrinho`); remove.textContent = '×';
+        controls.append(decrease, quantity, increase, remove); row.append(details, controls); cartItemsElement.append(row);
+      });
+      const quantidadeTotal = carrinho.reduce((soma, item) => soma + item.quantity, 0);
+      const valorTotal = carrinho.reduce((soma, item) => soma + item.price * item.quantity, 0);
+      cartCountElement.textContent = String(quantidadeTotal); cartCountElement.setAttribute('aria-label', `${quantidadeTotal} ${quantidadeTotal === 1 ? 'item' : 'itens'}`);
+      totalElement.textContent = formatarPreco(valorTotal);
+      document.getElementById('finalizar-pedido').disabled = carrinho.length === 0 || !telefoneWhatsApp;
+      document.getElementById('aviso-checkout').textContent = telefoneWhatsApp ? '' : 'Para finalizar pelo WhatsApp, configure o número no campo WHATSAPP do código.';
+      salvarCarrinho();
+    }
+    function adicionarAoCarrinho(card) {
       const selecionado = card.querySelector('.size-btn[aria-pressed="true"]');
-      const mensagem = `Olá! Quero o produto "${card.dataset.nome}" (${card.dataset.preco})` +
-        (selecionado ? `, tamanho ${selecionado.textContent}.` : '.');
-      link.href = `https://wa.me/${telefoneWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+      const possuiOpcoesDeTamanho = Boolean(card.querySelector('.sizes'));
+      const aviso = card.querySelector('.card-notice');
+      if (possuiOpcoesDeTamanho && !selecionado) { aviso.textContent = 'Escolha um tamanho antes de adicionar.'; card.querySelector('.size-btn')?.focus(); return; }
+      const preco = Number(card.dataset.preco);
+      if (!Number.isFinite(preco) || preco < 0) { aviso.textContent = 'Preço indisponível para este produto.'; return; }
+      const tamanho = selecionado ? selecionado.textContent : 'Único';
+      const existente = carrinho.find((item) => item.name === card.dataset.nome && item.size === tamanho && item.price === preco);
+      if (existente) existente.quantity += 1;
+      else carrinho.push({ name: card.dataset.nome, size: tamanho, price: preco, quantity: 1 });
+      aviso.textContent = 'Adicionado ao carrinho!'; renderizarCarrinho();
     }
 
     container.addEventListener('click', (evento) => {
       if (!(evento.target instanceof Element)) return;
-      const botao = evento.target.closest('.size-btn');
-      if (!botao || !container.contains(botao)) return;
-      const card = botao.closest('.card');
-      if (!card) return;
-      const estavaSelecionado = botao.getAttribute('aria-pressed') === 'true';
-      card.querySelectorAll('.size-btn').forEach((item) => item.setAttribute('aria-pressed', 'false'));
-      botao.setAttribute('aria-pressed', String(!estavaSelecionado));
-      atualizarLink(card);
+      const sizeButton = evento.target.closest('.size-btn');
+      if (sizeButton && container.contains(sizeButton)) {
+        const card = sizeButton.closest('.card'); if (!card) return;
+        const alreadySelected = sizeButton.getAttribute('aria-pressed') === 'true';
+        card.querySelectorAll('.size-btn').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+        sizeButton.setAttribute('aria-pressed', String(!alreadySelected));
+        card.querySelector('.card-notice').textContent = '';
+        return;
+      }
+      const addButton = evento.target.closest('.add-cart');
+      if (addButton && container.contains(addButton)) { const card = addButton.closest('.card'); if (card) adicionarAoCarrinho(card); }
+    });
+    cartItemsElement.addEventListener('click', (evento) => {
+      if (!(evento.target instanceof Element)) return;
+      const button = evento.target.closest('[data-action]'); if (!button) return;
+      const index = Number(button.dataset.index); const item = carrinho[index]; if (!item) return;
+      if (button.dataset.action === 'increase') item.quantity += 1;
+      if (button.dataset.action === 'decrease') item.quantity -= 1;
+      if (button.dataset.action === 'remove' || item.quantity <= 0) carrinho.splice(index, 1);
+      renderizarCarrinho();
+    });
+    document.getElementById('abrir-carrinho').addEventListener('click', () => dialog.showModal());
+    document.getElementById('fechar-carrinho').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (evento) => { if (evento.target === dialog) dialog.close(); });
+    document.getElementById('finalizar-pedido').addEventListener('click', () => {
+      if (!telefoneWhatsApp || !carrinho.length) return;
+      const linhas = carrinho.map((item) => `• ${item.name} — tam. ${item.size} — ${item.quantity}x ${formatarPreco(item.price)} = ${formatarPreco(item.price * item.quantity)}`);
+      const total = carrinho.reduce((soma, item) => soma + item.price * item.quantity, 0);
+      const mensagem = `Olá! Gostaria de fazer este pedido:\n${linhas.join('\n')}\n\nTotal: ${formatarPreco(total)}`;
+      window.open(`https://wa.me/${telefoneWhatsApp}?text=${encodeURIComponent(mensagem)}`, '_blank', 'noopener,noreferrer');
     });
 
     let requisicaoAtual = 0;
     async function carregarProdutos() {
-      const idRequisicao = ++requisicaoAtual;
-      mostrarCarregando();
-
-      if (!db) {
-        mostrarMensagem('Catálogo temporariamente indisponível', 'Não foi possível conectar ao serviço do catálogo. Tente novamente mais tarde.', true);
-        return;
-      }
-
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      const idRequisicao = ++requisicaoAtual; mostrarCarregando();
+      if (!db) { mostrarMensagem('Catálogo temporariamente indisponível', 'Não foi possível conectar ao serviço do catálogo. Tente novamente mais tarde.', true); return; }
+      const controller = new AbortController(); const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       try {
-        const { data, error } = await db
-          .from('produtos')
-          .select('descricao, valor, tamanhos, foto')
-          .abortSignal(controller.signal);
+        const { data, error } = await db.from('produtos').select('descricao, valor, tamanhos, foto').abortSignal(controller.signal);
         if (error) throw error;
         if (idRequisicao !== requisicaoAtual) return;
-
-        if (!Array.isArray(data) || data.length === 0) {
-          mostrarMensagem('Nenhum produto por aqui ainda', 'Volte em breve, estamos preparando as novidades.');
-          return;
-        }
-
+        if (!Array.isArray(data) || data.length === 0) { mostrarMensagem('Nenhum produto por aqui ainda', 'Volte em breve, estamos preparando as novidades.'); return; }
         const fragmento = document.createDocumentFragment();
         data.forEach((produto, indice) => fragmento.append(criarCard(produto ?? {}, indice)));
-        container.replaceChildren(fragmento);
-        container.setAttribute('aria-busy', 'false');
+        container.replaceChildren(fragmento); container.setAttribute('aria-busy', 'false');
       } catch (erro) {
         if (idRequisicao !== requisicaoAtual) return;
         console.error('Erro ao carregar produtos:', erro);
-        const texto = erro?.name === 'AbortError'
-          ? 'A conexão demorou demais. Verifique sua internet e tente novamente.'
-          : 'Verifique sua conexão e tente novamente.';
+        const texto = erro?.name === 'AbortError' ? 'A conexão demorou demais. Verifique sua internet e tente novamente.' : 'Verifique sua conexão e tente novamente.';
         mostrarMensagem('Não foi possível carregar o catálogo', texto, true);
-      } finally {
-        window.clearTimeout(timeout);
-      }
+      } finally { window.clearTimeout(timeout); }
     }
-
+    renderizarCarrinho();
     carregarProdutos();
   </script>
 </body>
