@@ -24,10 +24,18 @@
   </header>
   <main>
     <div class="section-heading"><div><h2>Novidades para você</h2><p>Encontre seu próximo look favorito.</p></div></div>
+    <section class="filters" aria-label="Filtros de produtos">
+      <label class="search-field">Buscar produto<input id="busca-produtos" type="search" placeholder="Nome, marca ou modelo" autocomplete="off"></label>
+      <label>Departamento<select id="filtro-publico"><option value="">Todos</option></select></label>
+      <label>Categoria<select id="filtro-categoria"><option value="">Todas</option></select></label>
+      <label>Tamanho / numeração<select id="filtro-tamanho"><option value="">Todos</option></select></label>
+      <label>Cor<select id="filtro-cor"><option value="">Todas</option></select></label>
+      <label class="stock-filter"><input id="somente-disponiveis" type="checkbox"> Somente disponíveis</label>
+      <button class="secondary-button clear-filters" id="limpar-filtros" type="button">Limpar filtros</button>
+    </section>
+    <p class="results-count" id="resultado-filtros" aria-live="polite"></p>
     <div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
   </main>
-  <footer>PeNaModa · Estilo para todos os momentos</footer>
-
   <dialog id="carrinho" aria-labelledby="titulo-carrinho">
     <section class="panel">
       <div class="panel-heading"><h2 id="titulo-carrinho">Seu carrinho</h2><button class="close-button" data-close="carrinho" type="button" aria-label="Fechar carrinho">×</button></div>

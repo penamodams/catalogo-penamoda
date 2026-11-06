@@ -1,39 +1,40 @@
 # PeNaModa — estrutura do projeto
 
-O site usa HTML estático com módulos JavaScript, Supabase e GitHub Pages. A separação deixa catálogo, carrinho, administração, configuração e estilos independentes:
+Catálogo estático no GitHub Pages com dados e autenticação no Supabase. Módulos separados para permitir evolução sem concentrar toda a operação em uma página.
 
 ```text
-index.html                 Catálogo público e carrinho
-admin.html                 Login e cadastro de produtos
-assets/css/site.css        Estilos compartilhados
-assets/img/logo.svg        Marca vetorial PeNaMod@
-assets/js/config.js        URL/chave pública, WhatsApp, UID administrativo
-assets/js/supabase-client.js Inicialização do cliente Supabase
-assets/js/catalog.js       Consulta/renderização dos produtos e carrinho
-assets/js/admin.js         Login e cadastro de produtos
-supabase/policies.sql      Políticas RLS para leitura pública e escrita do admin
+index.html                    Catálogo, filtros e carrinho
+admin.html                    Login, cadastro, edição e controle de estoque
+assets/css/site.css           Identidade visual e componentes compartilhados
+assets/img/logo.svg           Logotipo vetorial
+assets/js/config.js           Chave pública, WhatsApp, imagem base e UID admin
+assets/js/supabase-client.js  Cliente Supabase
+assets/js/catalog.js          Busca/filtros, produtos e carrinho
+assets/js/admin.js            Autenticação e gestão de produtos
+supabase/catalog_fields.sql   Migração para categoria/cor/público/estoque/id
+supabase/policies.sql         RLS: leitura pública; escrita só pelo admin
 ```
 
-## Configuração inicial
+## Ativação inicial
 
-1. No Supabase, crie/convide a conta que administrará a loja em **Authentication → Users**. Use uma senha forte e única.
-2. Copie o UUID dessa conta e preencha `adminUserId` em `assets/js/config.js`.
-3. Confirme a URL e a chave pública (`anon` ou `sb_publishable`) em `assets/js/config.js`. A chave pública pode ser usada no navegador; **nunca** publique uma chave `service_role` ou `sb_secret`.
-4. No SQL Editor do Supabase, revise e execute `supabase/policies.sql`. Substitua `COLOQUE_O_UUID_DO_ADMIN` pelo UUID real da conta. O script concede leitura pública dos produtos, mas permite insert/update/delete apenas para esse UUID autenticado.
-5. A tabela existente `public.produtos` deve ter as colunas `descricao` (text), `valor` (numeric), `tamanhos` (text) e `foto` (text). O formulário grava essas quatro colunas.
-6. Configure `whatsapp` em `assets/js/config.js` com DDI+DDD+número, apenas dígitos, para habilitar checkout.
-7. Publique o repositório com GitHub Pages. Navegue para `/admin.html` para fazer login e cadastrar itens.
+1. No Supabase, crie a conta administrativa em Authentication → Users. Guarde o e-mail e defina uma senha forte.
+2. Copie o UUID do usuário e preencha `adminUserId` em `assets/js/config.js`.
+3. Confirme URL e chave pública em `assets/js/config.js`. Nunca use `service_role` ou `sb_secret` no navegador.
+4. No SQL Editor, execute primeiro `supabase/catalog_fields.sql`.
+5. Edite `supabase/policies.sql`: substitua `COLOQUE_O_UUID_DO_ADMIN` pelo UUID real da conta e execute o SQL. Isso permite SELECT público e restringe INSERT/UPDATE/DELETE à conta configurada.
+6. Configure `whatsapp` em `assets/js/config.js` com DDI+DDD+número, apenas dígitos.
+7. A tabela `public.produtos` precisa manter `descricao`, `valor`, `tamanhos` e `foto`. A migração acrescenta `id`, `publico`, `categoria`, `cor` e `estoque`.
+8. Faça commit/publicação no GitHub Pages. Acesse `/admin.html` para gerenciar produtos.
 
-## Segurança
+## Operação do catálogo
 
-A área administrativa usa autenticação de usuário do Supabase — não há senha administrativa no JavaScript. Ocultar a interface no navegador é apenas conveniência; a proteção real das operações é feita pelas políticas RLS do banco. A policy de escrita compara `auth.uid()` com um UUID explicitamente configurado. Mantenha essa policy restrita e não conceda escrita à role `anon`.
+- Clientes filtram por busca, departamento, categoria, tamanho e cor; “Somente disponíveis” mostra apenas produtos com estoque maior que zero.
+- Para cada item, use um título claro como “Tênis Beira Rio Casual Branco Feminino”, informe cor, público, categoria, numerações e estoque.
+- As fotos usam `object-fit: contain` para mostrar o produto inteiro.
+- Carrinho mostra cor, tamanho, quantidade, subtotal por linha e total e prepara o pedido no WhatsApp.
+- No painel, administrador autenticado pode cadastrar, editar e excluir produtos. O banco também aplica RLS; a verificação de interface não substitui as policies.
+- Itens com estoque vazio são tratados como disponibilidade não informada; não são bloqueados no catálogo. Estoque igual a zero aparece esgotado e não permite adicionar ao carrinho.
 
-Os valores/preços enviados pelo carrinho são para montar o pedido no WhatsApp; se futuramente houver pagamento online, recalcule os preços no servidor e não confie nos valores do navegador.
+## Importante
 
-## Manutenção
-
-- Identidade visual: `assets/css/site.css` e `assets/img/logo.svg`.
-- Dados de conexão e configurações públicas: `assets/js/config.js`.
-- Comportamento da vitrine/carrinho: `assets/js/catalog.js`.
-- Acesso e cadastro: `assets/js/admin.js`.
-- Alterações no banco e permissões: `supabase/policies.sql`.
+O carrinho/WhatsApp não processa pagamento nem reserva estoque no servidor. Para pagamento online, reserva concorrente de estoque, imagens em galeria e permissões multiusuário, será necessário adicionar backend/Storage e validar operações no servidor. Faça backup do banco antes de executar migrações.
