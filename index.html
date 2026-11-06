@@ -1,96 +1,223 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PeNaModa - Catálogo Exclusivo</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* ... (mantenha o CSS que te enviei antes) ... */
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Catálogo PeNaModa: moda com tamanhos e preços atualizados.">
+<title>PeNaModa – Catálogo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+  :root {
+    --ink: #1b1b1d;
+    --muted: #6b6b70;
+    --line: #e6e4e2;
+    --soft: #f3f2f1;
+    --red: #d0021b;
+    --bg: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-padding-top: 1rem; }
+  body {
+    font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header { padding: 2.5rem 1rem 1.5rem; text-align: center; border-bottom: 1px solid var(--line); }
+  .header h1 { font-size: clamp(2.25rem, 8vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .header h1 span { color: var(--red); }
+  .header p { margin-top: .6rem; color: var(--muted); font-size: 1rem; }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.5rem 1rem;
+  }
+  @media (min-width: 700px) { .grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2rem 1.25rem; } }
+
+  .card { display: flex; flex-direction: column; }
+  .photo { aspect-ratio: 4 / 5; background: var(--soft); border-radius: 6px; overflow: hidden; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card h3 { margin-top: .75rem; font-size: 1rem; font-weight: 600; }
+  .price { margin-top: .2rem; font-size: 1.2rem; font-weight: 800; color: var(--red); }
+
+  .sizes { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+  .size-btn {
+    min-width: 2.5rem; height: 2.5rem; padding: 0 .6rem;
+    font: inherit; font-size: .9rem; font-weight: 600;
+    color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+  }
+  .size-btn:hover { border-color: var(--ink); }
+  .size-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  .buy {
+    margin-top: .9rem; display: block; text-align: center; text-decoration: none;
+    padding: .7rem 1rem; border-radius: 6px; font-weight: 600; font-size: .95rem;
+    background: var(--red); color: #fff;
+  }
+  .buy:hover { background: #a80016; }
+
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  /* Carregamento, erro e vazio */
+  .skeleton .photo, .skeleton .line { background: linear-gradient(90deg, var(--soft) 25%, #fff 50%, var(--soft) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; }
+  .skeleton .line { height: 1rem; border-radius: 4px; margin-top: .75rem; width: 70%; }
+  .skeleton .line.short { width: 35%; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  .state { grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--muted); }
+  .state strong { display: block; color: var(--ink); font-size: 1.15rem; margin-bottom: .4rem; }
+  .state button {
+    margin-top: 1rem; font: inherit; font-weight: 600; padding: .7rem 1.4rem;
+    border: 0; border-radius: 6px; background: var(--ink); color: #fff; cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) { .skeleton .photo, .skeleton .line { animation: none; } }
+</style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Pe<span>Na</span>Moda</h1>
-    </div>
+<header class="header">
+  <h1>Pe<span>Na</span>Moda</h1>
+  <p>Escolha o tamanho e peça pelo WhatsApp</p>
+</header>
 
-    <!-- O erro vai aparecer aqui na tela -->
-    <div id="loading" style="text-align: center; color: #D0021B; font-weight: bold; padding: 20px;">
-        Carregando catálogo...
-    </div>
+<main>
+  <div class="grid" id="catalogo" aria-live="polite" aria-busy="true"></div>
+</main>
 
-    <div class="grid" id="catalogo"></div>
+<script>
+  /* ===== Configuração ===== */
+  const SUPABASE_URL = 'https://izperhbkeanrfflcdtkd.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_juaoZjOGkOV2zDuGKxkYpg_qG0pIEBk';
+  const GITHUB_IMAGES_URL = 'https://penamodams.github.io/catalogo-penamoda/';
+  const WHATSAPP = ''; // ex.: '5567999999999' (DDI + DDD + número). Vazio = esconde o botão.
 
-    <script>
-        const SUPABASE_URL = 'https://izperhbkeanrfflcdtkd.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_juaoZjOGkOV2zDuGKxkYpg_qG0pIEBk'; 
-        const GITHUB_IMAGES_URL = 'https://penamodams.github.io/catalogo-penamoda/'; 
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const container = document.getElementById('catalogo');
 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const SEM_FOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="100%" height="100%" fill="#f3f2f1"/>' +
+    '<text x="50%" y="50%" fill="#6b6b70" font-family="sans-serif" font-size="20" text-anchor="middle">Foto em breve</text></svg>'
+  );
 
-        async function carregarProdutos() {
-            try {
-                const { data: produtos, error } = await _supabase
-                    .from('produtos')
-                    .select('*');
+  /* ===== Utilitários ===== */
+  // Evita que texto vindo do banco seja interpretado como HTML
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
 
-                const loadingDiv = document.getElementById('loading');
-                const container = document.getElementById('catalogo');
+  const brl = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Consulte';
+  };
 
-                if (error) {
-                    // Mostra o erro real do Supabase na tela
-                    loadingDiv.innerHTML = `Erro no Supabase: ${error.message} | Código: ${error.code}`;
-                    console.error(error);
-                    return;
-                }
+  /* ===== Estados da tela ===== */
+  function mostrarCarregando() {
+    container.setAttribute('aria-busy', 'true');
+    container.innerHTML = Array.from({ length: 8 }, () => `
+      <div class="card skeleton" aria-hidden="true">
+        <div class="photo"></div><div class="line"></div><div class="line short"></div>
+      </div>`).join('');
+  }
 
-                if (!produtos || produtos.length === 0) {
-                    loadingDiv.innerHTML = "O banco conectou, mas não retornou nenhum produto.";
-                    return;
-                }
+  function mostrarMensagem(titulo, texto, comBotao) {
+    container.setAttribute('aria-busy', 'false');
+    container.innerHTML = `
+      <div class="state" role="status">
+        <strong>${titulo}</strong>${texto}
+        ${comBotao ? '<br><button type="button" id="retry">Tentar de novo</button>' : ''}
+      </div>`;
+    if (comBotao) document.getElementById('retry').addEventListener('click', carregarProdutos);
+  }
 
-                loadingDiv.style.display = 'none'; 
-                container.innerHTML = ''; 
+  /* ===== Catálogo ===== */
+  function criarCard(p, i) {
+    const tamanhos = (p.tamanhos || '').split(',').map((t) => t.trim()).filter(Boolean);
+    const foto = p.foto ? GITHUB_IMAGES_URL + encodeURIComponent(p.foto) : SEM_FOTO;
 
-                produtos.forEach(produto => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.dataset.nome = p.descricao || '';
+    card.dataset.preco = brl(p.valor);
 
-                    let sizesHtml = '';
-                    if (produto.tamanhos) {
-                        const tamanhosArray = produto.tamanhos.split(',').map(t => t.trim());
-                        tamanhosArray.forEach(tam => {
-                            sizesHtml += `<button class="size-btn" onclick="selecionarTamanho(this)">${tam}</button>`;
-                        });
-                    }
+    card.innerHTML = `
+      <div class="photo">
+        <img src="${esc(foto)}" alt="${esc(p.descricao)}" width="400" height="500"
+             ${i < 4 ? '' : 'loading="lazy"'} decoding="async">
+      </div>
+      <h3>${esc(p.descricao)}</h3>
+      <div class="price">${brl(p.valor)}</div>
+      ${tamanhos.length ? `
+        <div class="sizes" role="group" aria-label="Tamanhos de ${esc(p.descricao)}">
+          ${tamanhos.map((t) => `<button type="button" class="size-btn" aria-pressed="false">${esc(t)}</button>`).join('')}
+        </div>` : ''}
+      ${WHATSAPP ? '<a class="buy" target="_blank" rel="noopener">Pedir no WhatsApp</a>' : ''}
+    `;
 
-                    const precoFormatado = parseFloat(produto.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    // Evita loop infinito se a imagem de fallback também falhar
+    card.querySelector('img').addEventListener('error', function () {
+      if (this.src !== SEM_FOTO) this.src = SEM_FOTO;
+    }, { once: true });
 
-                    card.innerHTML = `
-                        <img src="${GITHUB_IMAGES_URL}${produto.foto}" alt="${produto.descricao}" onerror="this.src='https://via.placeholder.com/260x320?text=Foto+em+Breve'">
-                        <h3>${produto.descricao}</h3>
-                        <div class="price">${precoFormatado}</div>
-                        <div class="sizes-label">Tamanhos disponíveis</div>
-                        <div class="sizes">${sizesHtml}</div>
-                    `;
+    atualizarLink(card);
+    return card;
+  }
 
-                    container.appendChild(card);
-                });
+  function atualizarLink(card) {
+    const link = card.querySelector('.buy');
+    if (!link) return;
+    const sel = card.querySelector('.size-btn[aria-pressed="true"]');
+    const msg = `Olá! Quero o produto "${card.dataset.nome}" (${card.dataset.preco})` +
+                (sel ? `, tamanho ${sel.textContent}.` : '.');
+    link.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  }
 
-            } catch (err) {
-                document.getElementById('loading').innerHTML = `Erro de Conexão: ${err.message}`;
-                console.error(err);
-            }
-        }
+  // Um único listener para todos os botões de tamanho; clicar de novo desmarca
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.size-btn');
+    if (!btn) return;
+    const card = btn.closest('.card');
+    const ativo = btn.getAttribute('aria-pressed') === 'true';
+    card.querySelectorAll('.size-btn').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', String(!ativo));
+    atualizarLink(card);
+  });
 
-        function selecionarTamanho(botao) {
-            const botoes = botao.parentElement.querySelectorAll('.size-btn');
-            botoes.forEach(btn => btn.classList.remove('selected'));
-            botao.classList.add('selected');
-        }
+  async function carregarProdutos() {
+    mostrarCarregando();
+    try {
+      const { data, error } = await db
+        .from('produtos')
+        .select('descricao, valor, tamanhos, foto');
 
-        carregarProdutos();
-    </script>
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        mostrarMensagem('Nenhum produto por aqui ainda', 'Volte em breve, estamos preparando as novidades.', false);
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      data.forEach((p, i) => frag.appendChild(criarCard(p, i)));
+      container.replaceChildren(frag);
+      container.setAttribute('aria-busy', 'false');
+
+    } catch (err) {
+      console.error('Erro ao carregar produtos:', err); // detalhes técnicos só no console
+      mostrarMensagem('Não foi possível carregar o catálogo', 'Verifique sua conexão e tente novamente.', true);
+    }
+  }
+
+  carregarProdutos();
+</script>
 </body>
 </html>
