@@ -3,35 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PeNaModa - Catálogo</title>
+    <title>PeNaModa - Catálogo Exclusivo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Estilos básicos para ficar bonito */
-        body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header img { max-width: 200px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .card { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden; text-align: center; padding-bottom: 15px; }
-        .card img { width: 100%; height: 300px; object-fit: cover; }
-        .card h3 { font-size: 16px; margin: 10px 0; color: #333; }
-        .price { font-size: 20px; font-weight: bold; color: #d4af37; margin: 10px 0; }
+        /* Paleta de cores baseada na sua logo */
+        :root {
+            --amarelo: #F5A623;
+            --azul-marinho: #2C3E50;
+            --vermelho: #D0021B;
+            --roxo: #8E44AD;
+            --turquesa: #1ABC9C;
+            --fundo: #FAFAFA;
+            --texto: #333;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--fundo); 
+            margin: 0; 
+            padding: 0; 
+            color: var(--texto);
+        }
+
+        /* Cabeçalho com espaço para o LOGO */
+        .header { 
+            text-align: center; 
+            padding: 40px 20px; 
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border-bottom: 4px solid var(--amarelo);
+        }
+
+        /* QUANDO VOCÊ TIVER A IMAGEM DO LOGO, COLOQUE O NOME DO ARQUIVO AQUI */
+        .header-logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 10px;
+            /* Se for usar a imagem, descomente a linha abaixo e apague o h1 do html */
+            /* content: url('logo.png'); */ 
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            color: var(--azul-marinho);
+            letter-spacing: 2px;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        .header h1 span {
+            font-weight: bold;
+            color: var(--roxo);
+        }
+
+        /* Grade de produtos */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+            gap: 25px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 0 20px 40px 20px; 
+        }
+
+        /* Cartão do produto */
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08); 
+            overflow: hidden; 
+            text-align: center; 
+            padding-bottom: 20px; 
+            transition: transform 0.3s ease;
+            border-top: 3px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+            border-top: 3px solid var(--turquesa);
+        }
+
+        .card img { 
+            width: 100%; 
+            height: 320px; 
+            object-fit: cover; 
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card h3 { 
+            font-size: 16px; 
+            margin: 15px 10px 5px 10px; 
+            color: var(--azul-marinho); 
+            font-weight: 600;
+        }
+
+        .price { 
+            font-size: 22px; 
+            font-weight: bold; 
+            color: var(--amarelo); 
+            margin: 10px 0; 
+        }
+
+        .sizes-label {
+            font-size: 12px;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
         .sizes { margin: 10px 0; }
-        .size-btn { border: 1px solid #ccc; background: #fff; padding: 5px 10px; margin: 2px; cursor: pointer; border-radius: 4px; }
-        .size-btn.selected { background: #333; color: white; border-color: #333; }
+
+        .size-btn { 
+            border: 1px solid #ccc; 
+            background: #fff; 
+            color: var(--azul-marinho);
+            padding: 6px 12px; 
+            margin: 3px; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .size-btn:hover {
+            border-color: var(--azul-marinho);
+        }
+
+        .size-btn.selected { 
+            background: var(--azul-marinho); 
+            color: white; 
+            border-color: var(--azul-marinho); 
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Mensagem de carregamento/erro */
+        #loading { text-align: center; font-size: 18px; color: #666; padding: 50px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>PeNaModa</h1>
+        <!-- FUTURAMENTE: Substitua o <h1> pela tag <img> abaixo quando subir o logo -->
+        <!-- <img src="logo.png" alt="PeNaModa" class="header-logo"> -->
+        
+        <h1>Pe<span>Na</span>Moda</h1>
     </div>
+
+    <div id="loading">Carregando catálogo exclusivo...</div>
 
     <div class="grid" id="catalogo">
         <!-- Os produtos vão aparecer aqui -->
     </div>
 
     <script>
-               // 1. SUAS CHAVES DO SUPABASE
+        // 1. SUAS CHAVES DO SUPABASE
         const SUPABASE_URL = 'https://izperhbkeanrfflcdtkd.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_juaoZjOGkOV2zDuGKxkYpg_qG0pIEBk'; 
         
@@ -45,37 +176,37 @@
                 .from('produtos')
                 .select('*');
 
+            const loadingDiv = document.getElementById('loading');
+            const container = document.getElementById('catalogo');
+
             if (error) {
                 console.error('Erro ao buscar produtos:', error);
+                loadingDiv.innerHTML = "Erro ao carregar os produtos. Verifique as regras de segurança do banco de dados.";
                 return;
             }
 
-            const container = document.getElementById('catalogo');
+            loadingDiv.style.display = 'none'; // Esconde o carregando
             container.innerHTML = ''; // Limpa o container
 
             produtos.forEach(produto => {
-                // Cria o card do produto
                 const card = document.createElement('div');
                 card.className = 'card';
 
-                // Monta os botões de tamanho
                 let sizesHtml = '';
                 if (produto.tamanhos) {
-                    // Separa por vírgula e limpa espaços extras
                     const tamanhosArray = produto.tamanhos.split(',').map(t => t.trim());
                     tamanhosArray.forEach(tam => {
                         sizesHtml += `<button class="size-btn" onclick="selecionarTamanho(this)">${tam}</button>`;
                     });
                 }
 
-                // Formata o preço para Real
                 const precoFormatado = parseFloat(produto.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-                // Monta o HTML interno do card
                 card.innerHTML = `
-                    <img src="${GITHUB_IMAGES_URL}${produto.foto}" alt="${produto.descricao}">
+                    <img src="${GITHUB_IMAGES_URL}${produto.foto}" alt="${produto.descricao}" onerror="this.src='https://via.placeholder.com/260x320?text=Foto+em+Breve'">
                     <h3>${produto.descricao}</h3>
                     <div class="price">${precoFormatado}</div>
+                    <div class="sizes-label">Tamanhos disponíveis</div>
                     <div class="sizes">${sizesHtml}</div>
                 `;
 
@@ -83,16 +214,12 @@
             });
         }
 
-        // Função para marcar o tamanho selecionado
         function selecionarTamanho(botao) {
-            // Remove a seleção dos outros botões do mesmo card
             const botoes = botao.parentElement.querySelectorAll('.size-btn');
             botoes.forEach(btn => btn.classList.remove('selected'));
-            // Adiciona a seleção no botão clicado
             botao.classList.add('selected');
         }
 
-        // Chama a função assim que a página carregar
         carregarProdutos();
     </script>
 </body>
