@@ -1,223 +1,350 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Catálogo PeNaModa: moda com tamanhos e preços atualizados.">
-<title>PeNaModa – Catálogo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<style>
-  :root {
-    --ink: #1b1b1d;
-    --muted: #6b6b70;
-    --line: #e6e4e2;
-    --soft: #f3f2f1;
-    --red: #d0021b;
-    --bg: #ffffff;
-  }
-  * { box-sizing: border-box; margin: 0; }
-  html { scroll-padding-top: 1rem; }
-  body {
-    font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
-    color: var(--ink);
-    background: var(--bg);
-    line-height: 1.4;
-    -webkit-font-smoothing: antialiased;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Catálogo PeNaModa: moda com tamanhos e preços atualizados.">
+  <meta name="theme-color" content="#ffffff">
+  <title>PeNaModa – Catálogo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1b1d;
+      --muted: #6b6b70;
+      --line: #e6e4e2;
+      --soft: #f3f2f1;
+      --red: #d0021b;
+      --red-hover: #a80016;
+      --bg: #fff;
+      --radius: 8px;
+    }
 
-  .header { padding: 2.5rem 1rem 1.5rem; text-align: center; border-bottom: 1px solid var(--line); }
-  .header h1 { font-size: clamp(2.25rem, 8vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
-  .header h1 span { color: var(--red); }
-  .header p { margin-top: .6rem; color: var(--muted); font-size: 1rem; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+    .header {
+      padding: 2.5rem 1rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: clamp(2.25rem, 8vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1;
+    }
+    .header h1 span { color: var(--red); }
+    .header p { margin: .6rem 0 0; color: var(--muted); }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1.5rem 1rem;
-  }
-  @media (min-width: 700px) { .grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2rem 1.25rem; } }
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+      gap: 1.5rem 1rem;
+    }
+    @media (min-width: 700px) {
+      .grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2rem 1.25rem; }
+    }
 
-  .card { display: flex; flex-direction: column; }
-  .photo { aspect-ratio: 4 / 5; background: var(--soft); border-radius: 6px; overflow: hidden; }
-  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .card h3 { margin-top: .75rem; font-size: 1rem; font-weight: 600; }
-  .price { margin-top: .2rem; font-size: 1.2rem; font-weight: 800; color: var(--red); }
+    .card { display: flex; min-width: 0; flex-direction: column; }
+    .photo { aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius); background: var(--soft); }
+    .photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .card h2 { margin: .75rem 0 0; font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
+    .price { margin-top: .2rem; color: var(--red); font-size: 1.2rem; font-weight: 800; }
 
-  .sizes { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
-  .size-btn {
-    min-width: 2.5rem; height: 2.5rem; padding: 0 .6rem;
-    font: inherit; font-size: .9rem; font-weight: 600;
-    color: var(--ink); background: var(--bg);
-    border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
-  }
-  .size-btn:hover { border-color: var(--ink); }
-  .size-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .sizes { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+    .size-btn {
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      padding: 0 .6rem;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: var(--bg);
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .size-btn:hover { border-color: var(--ink); }
+    .size-btn[aria-pressed="true"] { border-color: var(--ink); color: #fff; background: var(--ink); }
 
-  .buy {
-    margin-top: .9rem; display: block; text-align: center; text-decoration: none;
-    padding: .7rem 1rem; border-radius: 6px; font-weight: 600; font-size: .95rem;
-    background: var(--red); color: #fff;
-  }
-  .buy:hover { background: #a80016; }
+    .buy {
+      display: block;
+      margin-top: .9rem;
+      padding: .75rem 1rem;
+      border-radius: 6px;
+      color: #fff;
+      background: var(--red);
+      font-size: .95rem;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+    }
+    .buy:hover { background: var(--red-hover); }
 
-  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+    :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 
-  /* Carregamento, erro e vazio */
-  .skeleton .photo, .skeleton .line { background: linear-gradient(90deg, var(--soft) 25%, #fff 50%, var(--soft) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; }
-  .skeleton .line { height: 1rem; border-radius: 4px; margin-top: .75rem; width: 70%; }
-  .skeleton .line.short { width: 35%; }
-  @keyframes shimmer { to { background-position: -200% 0; } }
+    .skeleton .photo, .skeleton .line {
+      background: linear-gradient(90deg, var(--soft) 25%, #fff 50%, var(--soft) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite linear;
+    }
+    .skeleton .line { width: 70%; height: 1rem; margin-top: .75rem; border-radius: 4px; }
+    .skeleton .line.short { width: 35%; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
 
-  .state { grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--muted); }
-  .state strong { display: block; color: var(--ink); font-size: 1.15rem; margin-bottom: .4rem; }
-  .state button {
-    margin-top: 1rem; font: inherit; font-weight: 600; padding: .7rem 1.4rem;
-    border: 0; border-radius: 6px; background: var(--ink); color: #fff; cursor: pointer;
-  }
+    .state { grid-column: 1 / -1; padding: 3rem 1rem; color: var(--muted); text-align: center; }
+    .state strong { display: block; margin-bottom: .4rem; color: var(--ink); font-size: 1.15rem; }
+    .state button {
+      margin-top: 1rem;
+      padding: .75rem 1.4rem;
+      border: 0;
+      border-radius: 6px;
+      color: #fff;
+      background: var(--ink);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .state button:hover { background: #3b3b3e; }
 
-  @media (prefers-reduced-motion: reduce) { .skeleton .photo, .skeleton .line { animation: none; } }
-</style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; }
+      .skeleton .photo, .skeleton .line { animation: none; }
+    }
+  </style>
 </head>
 <body>
+  <header class="header">
+    <h1>Pe<span>Na</span>Moda</h1>
+    <p>Escolha o tamanho e peça pelo WhatsApp</p>
+  </header>
 
-<header class="header">
-  <h1>Pe<span>Na</span>Moda</h1>
-  <p>Escolha o tamanho e peça pelo WhatsApp</p>
-</header>
+  <main>
+    <div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
+  </main>
 
-<main>
-  <div class="grid" id="catalogo" aria-live="polite" aria-busy="true"></div>
-</main>
+  <script>
+    'use strict';
 
-<script>
-  /* ===== Configuração ===== */
-  const SUPABASE_URL = 'https://lzperhbkeanfrflcdtkd.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_juaoZjOGkOV2zDuGKxkYpg_qG0pIEBk';
-  const GITHUB_IMAGES_URL = 'https://penamodams.github.io/catalogo-penamoda/';
-  const WHATSAPP = ''; // ex.: '5567999999999' (DDI + DDD + número). Vazio = esconde o botão.
+    // A chave publishable/anon é pública por definição. Restrinja o acesso aos dados
+    // usando as políticas RLS do Supabase; nunca coloque uma service_role key aqui.
+    const SUPABASE_URL = 'https://lzperhbkeanfrflcdtkd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_juaoZjOGkOV2zDuGKxkYpg_qG0pIEBk';
+    const GITHUB_IMAGES_URL = 'https://penamodams.github.io/catalogo-penamoda/';
+    const WHATSAPP = ''; // DDI + DDD + número, somente dígitos. Ex.: '5567999999999'. Vazio = oculta o botão.
+    const REQUEST_TIMEOUT_MS = 15000;
 
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const container = document.getElementById('catalogo');
+    const container = document.getElementById('catalogo');
+    const SEM_FOTO = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500"><rect width="400" height="500" fill="#f3f2f1"/><text x="200" y="250" fill="#6b6b70" font-family="sans-serif" font-size="20" text-anchor="middle">Foto em breve</text></svg>'
+    );
+    const telefoneWhatsApp = String(WHATSAPP).replace(/\D/g, '');
 
-  const SEM_FOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="100%" height="100%" fill="#f3f2f1"/>' +
-    '<text x="50%" y="50%" fill="#6b6b70" font-family="sans-serif" font-size="20" text-anchor="middle">Foto em breve</text></svg>'
-  );
+    function criarClienteSupabase() {
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') return null;
+      try {
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      } catch (error) {
+        console.error('Não foi possível inicializar o Supabase:', error);
+        return null;
+      }
+    }
 
-  /* ===== Utilitários ===== */
-  // Evita que texto vindo do banco seja interpretado como HTML
-  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
+    const db = criarClienteSupabase();
 
-  const brl = (v) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Consulte';
-  };
+    function formatarPreco(valor) {
+      if (valor === null || valor === undefined || String(valor).trim() === '') return 'Consulte';
+      const numero = Number(valor);
+      return Number.isFinite(numero)
+        ? numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+        : 'Consulte';
+    }
 
-  /* ===== Estados da tela ===== */
-  function mostrarCarregando() {
-    container.setAttribute('aria-busy', 'true');
-    container.innerHTML = Array.from({ length: 8 }, () => `
-      <div class="card skeleton" aria-hidden="true">
-        <div class="photo"></div><div class="line"></div><div class="line short"></div>
-      </div>`).join('');
-  }
+    function obterTamanhos(valor) {
+      const itens = Array.isArray(valor) ? valor : String(valor ?? '').split(',');
+      return [...new Set(itens.map((tamanho) => String(tamanho).trim()).filter(Boolean))];
+    }
 
-  function mostrarMensagem(titulo, texto, comBotao) {
-    container.setAttribute('aria-busy', 'false');
-    container.innerHTML = `
-      <div class="state" role="status">
-        <strong>${titulo}</strong>${texto}
-        ${comBotao ? '<br><button type="button" id="retry">Tentar de novo</button>' : ''}
-      </div>`;
-    if (comBotao) document.getElementById('retry').addEventListener('click', carregarProdutos);
-  }
+    // Os nomes de imagem devem ser caminhos relativos dentro do repositório de imagens.
+    // Codifica cada segmento e impede que caminhos ../ saiam da pasta publicada.
+    function urlDaFoto(nome) {
+      const segmentos = String(nome ?? '').replaceAll('\\', '/').split('/').filter(Boolean);
+      if (!segmentos.length || segmentos.some((parte) => parte === '.' || parte === '..')) return SEM_FOTO;
+      return GITHUB_IMAGES_URL + segmentos.map(encodeURIComponent).join('/');
+    }
 
-  /* ===== Catálogo ===== */
-  function criarCard(p, i) {
-    const tamanhos = (p.tamanhos || '').split(',').map((t) => t.trim()).filter(Boolean);
-    const foto = p.foto ? GITHUB_IMAGES_URL + encodeURIComponent(p.foto) : SEM_FOTO;
+    function mostrarCarregando() {
+      container.setAttribute('aria-busy', 'true');
+      container.replaceChildren(...Array.from({ length: 8 }, () => {
+        const card = document.createElement('div');
+        card.className = 'card skeleton';
+        card.setAttribute('aria-hidden', 'true');
+        const foto = document.createElement('div');
+        foto.className = 'photo';
+        const linha = document.createElement('div');
+        linha.className = 'line';
+        const linhaCurta = document.createElement('div');
+        linhaCurta.className = 'line short';
+        card.append(foto, linha, linhaCurta);
+        return card;
+      }));
+    }
 
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.dataset.nome = p.descricao || '';
-    card.dataset.preco = brl(p.valor);
+    function mostrarMensagem(titulo, texto, comBotao = false) {
+      container.setAttribute('aria-busy', 'false');
+      const estado = document.createElement('div');
+      estado.className = 'state';
+      estado.setAttribute('role', 'status');
+      const tituloElemento = document.createElement('strong');
+      tituloElemento.textContent = titulo;
+      const textoElemento = document.createElement('span');
+      textoElemento.textContent = texto;
+      estado.append(tituloElemento, textoElemento);
 
-    card.innerHTML = `
-      <div class="photo">
-        <img src="${esc(foto)}" alt="${esc(p.descricao)}" width="400" height="500"
-             ${i < 4 ? '' : 'loading="lazy"'} decoding="async">
-      </div>
-      <h3>${esc(p.descricao)}</h3>
-      <div class="price">${brl(p.valor)}</div>
-      ${tamanhos.length ? `
-        <div class="sizes" role="group" aria-label="Tamanhos de ${esc(p.descricao)}">
-          ${tamanhos.map((t) => `<button type="button" class="size-btn" aria-pressed="false">${esc(t)}</button>`).join('')}
-        </div>` : ''}
-      ${WHATSAPP ? '<a class="buy" target="_blank" rel="noopener">Pedir no WhatsApp</a>' : ''}
-    `;
+      if (comBotao) {
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.textContent = 'Tentar de novo';
+        botao.addEventListener('click', carregarProdutos);
+        estado.append(document.createElement('br'), botao);
+      }
+      container.replaceChildren(estado);
+    }
 
-    // Evita loop infinito se a imagem de fallback também falhar
-    card.querySelector('img').addEventListener('error', function () {
-      if (this.src !== SEM_FOTO) this.src = SEM_FOTO;
-    }, { once: true });
+    function criarCard(produto, indice) {
+      const descricao = String(produto.descricao ?? '').trim() || 'Produto sem nome';
+      const preco = formatarPreco(produto.valor);
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.dataset.nome = descricao;
+      card.dataset.preco = preco;
 
-    atualizarLink(card);
-    return card;
-  }
+      const molduraFoto = document.createElement('div');
+      molduraFoto.className = 'photo';
+      const imagem = document.createElement('img');
+      imagem.src = produto.foto ? urlDaFoto(produto.foto) : SEM_FOTO;
+      imagem.alt = descricao;
+      imagem.width = 400;
+      imagem.height = 500;
+      imagem.decoding = 'async';
+      if (indice >= 4) imagem.loading = 'lazy';
+      imagem.addEventListener('error', () => {
+        if (imagem.src !== SEM_FOTO) imagem.src = SEM_FOTO;
+      });
+      molduraFoto.append(imagem);
 
-  function atualizarLink(card) {
-    const link = card.querySelector('.buy');
-    if (!link) return;
-    const sel = card.querySelector('.size-btn[aria-pressed="true"]');
-    const msg = `Olá! Quero o produto "${card.dataset.nome}" (${card.dataset.preco})` +
-                (sel ? `, tamanho ${sel.textContent}.` : '.');
-    link.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-  }
+      const titulo = document.createElement('h2');
+      titulo.textContent = descricao;
+      const precoElemento = document.createElement('p');
+      precoElemento.className = 'price';
+      precoElemento.textContent = preco;
+      card.append(molduraFoto, titulo, precoElemento);
 
-  // Um único listener para todos os botões de tamanho; clicar de novo desmarca
-  container.addEventListener('click', (e) => {
-    const btn = e.target.closest('.size-btn');
-    if (!btn) return;
-    const card = btn.closest('.card');
-    const ativo = btn.getAttribute('aria-pressed') === 'true';
-    card.querySelectorAll('.size-btn').forEach((b) => b.setAttribute('aria-pressed', 'false'));
-    btn.setAttribute('aria-pressed', String(!ativo));
-    atualizarLink(card);
-  });
+      const tamanhos = obterTamanhos(produto.tamanhos);
+      if (tamanhos.length) {
+        const grupo = document.createElement('div');
+        grupo.className = 'sizes';
+        grupo.setAttribute('role', 'group');
+        grupo.setAttribute('aria-label', `Tamanhos de ${descricao}`);
+        tamanhos.forEach((tamanho) => {
+          const botao = document.createElement('button');
+          botao.type = 'button';
+          botao.className = 'size-btn';
+          botao.setAttribute('aria-pressed', 'false');
+          botao.textContent = tamanho;
+          grupo.append(botao);
+        });
+        card.append(grupo);
+      }
 
-  async function carregarProdutos() {
-    mostrarCarregando();
-    try {
-      const { data, error } = await db
-        .from('produtos')
-        .select('descricao, valor, tamanhos, foto');
+      if (telefoneWhatsApp) {
+        const link = document.createElement('a');
+        link.className = 'buy';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Pedir no WhatsApp';
+        atualizarLink(card, link);
+        card.append(link);
+      }
+      return card;
+    }
 
-      if (error) throw error;
+    function atualizarLink(card, link = card.querySelector('.buy')) {
+      if (!link) return;
+      const selecionado = card.querySelector('.size-btn[aria-pressed="true"]');
+      const mensagem = `Olá! Quero o produto "${card.dataset.nome}" (${card.dataset.preco})` +
+        (selecionado ? `, tamanho ${selecionado.textContent}.` : '.');
+      link.href = `https://wa.me/${telefoneWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+    }
 
-      if (!data || data.length === 0) {
-        mostrarMensagem('Nenhum produto por aqui ainda', 'Volte em breve, estamos preparando as novidades.', false);
+    container.addEventListener('click', (evento) => {
+      if (!(evento.target instanceof Element)) return;
+      const botao = evento.target.closest('.size-btn');
+      if (!botao || !container.contains(botao)) return;
+      const card = botao.closest('.card');
+      if (!card) return;
+      const estavaSelecionado = botao.getAttribute('aria-pressed') === 'true';
+      card.querySelectorAll('.size-btn').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+      botao.setAttribute('aria-pressed', String(!estavaSelecionado));
+      atualizarLink(card);
+    });
+
+    let requisicaoAtual = 0;
+    async function carregarProdutos() {
+      const idRequisicao = ++requisicaoAtual;
+      mostrarCarregando();
+
+      if (!db) {
+        mostrarMensagem('Catálogo temporariamente indisponível', 'Não foi possível conectar ao serviço do catálogo. Tente novamente mais tarde.', true);
         return;
       }
 
-      const frag = document.createDocumentFragment();
-      data.forEach((p, i) => frag.appendChild(criarCard(p, i)));
-      container.replaceChildren(frag);
-      container.setAttribute('aria-busy', 'false');
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      try {
+        const { data, error } = await db
+          .from('produtos')
+          .select('descricao, valor, tamanhos, foto')
+          .abortSignal(controller.signal);
+        if (error) throw error;
+        if (idRequisicao !== requisicaoAtual) return;
 
-    } catch (err) {
-      console.error('Erro ao carregar produtos:', err); // detalhes técnicos só no console
-      mostrarMensagem('Não foi possível carregar o catálogo', 'Verifique sua conexão e tente novamente.', true);
+        if (!Array.isArray(data) || data.length === 0) {
+          mostrarMensagem('Nenhum produto por aqui ainda', 'Volte em breve, estamos preparando as novidades.');
+          return;
+        }
+
+        const fragmento = document.createDocumentFragment();
+        data.forEach((produto, indice) => fragmento.append(criarCard(produto ?? {}, indice)));
+        container.replaceChildren(fragmento);
+        container.setAttribute('aria-busy', 'false');
+      } catch (erro) {
+        if (idRequisicao !== requisicaoAtual) return;
+        console.error('Erro ao carregar produtos:', erro);
+        const texto = erro?.name === 'AbortError'
+          ? 'A conexão demorou demais. Verifique sua internet e tente novamente.'
+          : 'Verifique sua conexão e tente novamente.';
+        mostrarMensagem('Não foi possível carregar o catálogo', texto, true);
+      } finally {
+        window.clearTimeout(timeout);
+      }
     }
-  }
 
-  carregarProdutos();
-</script>
+    carregarProdutos();
+  </script>
 </body>
 </html>
