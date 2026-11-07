@@ -31,6 +31,7 @@
           <p class="help-text">Fotos públicas devem mostrar o produto inteiro e com boa iluminação. Para vários ângulos, adicione links às descrições até configurar galeria de imagens.</p>
           <div class="form-actions"><button class="primary-button" id="save-product" type="submit">Salvar e publicar produto</button><button class="secondary-button" id="cancel-edit" type="button" hidden>Cancelar edição</button></div>
         </form>
+        <section class="admin-finder" aria-label="Localizar produtos"><h2>Localizar produtos</h2><p class="help-text">Pesquise rapidamente por nome, marca, cor, tamanho ou situação do estoque.</p><div class="admin-search-grid"><label>Buscar<input id="admin-search" type="search" placeholder="Nome, marca, modelo..."></label><label>Tamanho<input id="admin-size-filter" type="search" placeholder="Ex.: 36"></label><label>Cor<input id="admin-color-filter" type="search" placeholder="Ex.: bege"></label><label>Estoque<select id="admin-stock-filter"><option value="">Todos</option><option value="available">Disponíveis</option><option value="empty">Esgotados</option><option value="unknown">Não informado</option></select></label></div><p class="help-text" id="admin-filter-count" aria-live="polite"></p></section>
         <h2>Produtos cadastrados</h2><div id="admin-product-list" class="admin-product-list" aria-live="polite"></div>
       </div>
       <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
