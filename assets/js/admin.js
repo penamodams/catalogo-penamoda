@@ -18,8 +18,19 @@ function resetForm() { productForm.reset(); editingId.value = ''; document.getEl
 function value(form, name) { return String(form.get(name) || '').trim(); }
 function renderProducts() {
   productList.replaceChildren();
-  if (!products.length) { const empty = document.createElement('p'); empty.className = 'help-text'; empty.textContent = 'Nenhum produto cadastrado.'; productList.append(empty); return; }
-  products.forEach((product) => {
+  const search = (document.getElementById('admin-search')?.value || '').trim().toLocaleLowerCase('pt-BR');
+  const size = (document.getElementById('admin-size-filter')?.value || '').trim().toLocaleLowerCase('pt-BR');
+  const color = (document.getElementById('admin-color-filter')?.value || '').trim().toLocaleLowerCase('pt-BR');
+  const stockFilter = document.getElementById('admin-stock-filter')?.value || '';
+  const filtered = products.filter((p) => {
+    const haystack = [p.descricao,p.publico,p.categoria,p.cor,p.marca,p.modelo].join(' ').toLocaleLowerCase('pt-BR');
+    const sizes = (Array.isArray(p.tamanhos) ? p.tamanhos : String(p.tamanhos || '').split(',')).map(v=>String(v).trim().toLocaleLowerCase('pt-BR'));
+    const stock = p.estoque === null || p.estoque === undefined || p.estoque === '' ? null : Number(p.estoque);
+    return (!search || haystack.includes(search)) && (!size || sizes.includes(size)) && (!color || String(p.cor || '').toLocaleLowerCase('pt-BR').includes(color)) && (!stockFilter || (stockFilter==='available' && stock>0) || (stockFilter==='empty' && stock===0) || (stockFilter==='unknown' && stock===null));
+  });
+  const count = document.getElementById('admin-filter-count'); if(count) count.textContent = `${filtered.length} de ${products.length} produtos`;
+  if (!filtered.length) { const empty = document.createElement('p'); empty.className = 'help-text'; empty.textContent = products.length ? 'Nenhum produto corresponde à pesquisa.' : 'Nenhum produto cadastrado.'; productList.append(empty); return; }
+  filtered.forEach((product) => {
     const row = document.createElement('article'); row.className = 'admin-product-row';
     const details = document.createElement('div'); const title = document.createElement('strong'); title.textContent = product.descricao || 'Produto sem nome';
     const meta = document.createElement('p'); const stock = product.estoque ?? 'Não informado'; meta.textContent = `${Number(product.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · ${product.publico || 'Sem departamento'} · Estoque: ${stock}`; details.append(title, meta);
@@ -71,3 +82,5 @@ productForm.addEventListener('submit', async (event) => {
   const wasEdit = Boolean(editingId.value); resetForm(); setStatus(wasEdit ? 'Alterações salvas.' : 'Produto cadastrado com sucesso!'); await loadAdminProducts();
 });
 document.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.close).close()));
+
+['admin-search','admin-size-filter','admin-color-filter','admin-stock-filter'].forEach((id)=>document.getElementById(id)?.addEventListener('input',renderProducts));
