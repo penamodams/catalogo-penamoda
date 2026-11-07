@@ -1,4 +1,4 @@
-/* Ajustes compactos para os filtros do catálogo. */
+/* Filtros do catálogo: compactos, arredondados e responsivos. */
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -7,7 +7,7 @@
   padding: 14px 16px;
   margin: 14px 0;
   border-radius: 20px;
-  background: #f7fafb;
+  background: #f7f9fc;
 }
 .filters label {
   display: flex;
@@ -22,10 +22,11 @@
 .filters input:not([type="checkbox"]),
 .filters select {
   width: 100%;
-  min-height: 38px;
-  padding: 7px 13px;
-  border: 1px solid #e1e8ec;
-  border-radius: 999px;
+  height: 36px;
+  min-height: 36px;
+  padding: 5px 13px;
+  border: 1px solid #d8e2eb;
+  border-radius: 12px;
   background: #fff;
   color: #27364b;
   font: inherit;
@@ -35,9 +36,9 @@
 .filters select { padding-right: 28px; }
 .filters input:not([type="checkbox"]):focus,
 .filters select:focus {
-  border-color: #009bb5;
+  border-color: #19a7b3;
   outline: 0;
-  box-shadow: 0 0 0 3px #009bb51a;
+  box-shadow: 0 0 0 3px #19a7b31a;
 }
 .filters .stock-filter {
   display: inline-flex;
@@ -45,19 +46,24 @@
   flex-direction: row;
   align-items: center;
   gap: 7px;
-  min-height: 38px;
+  min-height: 36px;
   padding: 0 12px;
-  border: 1px solid #e1e8ec;
-  border-radius: 999px;
+  border: 1px solid #d8e2eb;
+  border-radius: 12px;
   background: #fff;
   font-size: .82rem;
   white-space: nowrap;
 }
-.filters .stock-filter input { width: 16px; height: 16px; margin: 0; accent-color: #009bb5; }
-.filters .clear-filters {
-  min-height: 38px;
+.filters .stock-filter input {
+  width: 16px;
+  height: 16px;
   margin: 0;
-  padding: 6px 15px;
+  accent-color: #19a7b3;
+}
+.filters .clear-filters {
+  min-height: 36px;
+  margin: 0;
+  padding: 5px 15px;
   border-radius: 999px;
   font-size: .86rem;
 }
