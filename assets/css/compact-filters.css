@@ -1,0 +1,68 @@
+/* Ajustes compactos para os filtros do catálogo. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  border-radius: 20px;
+  background: #f7fafb;
+}
+.filters label {
+  display: flex;
+  flex: 0 1 155px;
+  flex-direction: column;
+  gap: 4px;
+  color: #667085;
+  font-size: .75rem;
+  font-weight: 700;
+}
+.filters .search-field { flex: 1 1 210px; }
+.filters input:not([type="checkbox"]),
+.filters select {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 13px;
+  border: 1px solid #e1e8ec;
+  border-radius: 999px;
+  background: #fff;
+  color: #27364b;
+  font: inherit;
+  font-size: .88rem;
+  box-shadow: 0 2px 8px #102a4308;
+}
+.filters select { padding-right: 28px; }
+.filters input:not([type="checkbox"]):focus,
+.filters select:focus {
+  border-color: #009bb5;
+  outline: 0;
+  box-shadow: 0 0 0 3px #009bb51a;
+}
+.filters .stock-filter {
+  display: inline-flex;
+  flex: 0 1 auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #e1e8ec;
+  border-radius: 999px;
+  background: #fff;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+.filters .stock-filter input { width: 16px; height: 16px; margin: 0; accent-color: #009bb5; }
+.filters .clear-filters {
+  min-height: 38px;
+  margin: 0;
+  padding: 6px 15px;
+  border-radius: 999px;
+  font-size: .86rem;
+}
+@media (max-width: 600px) {
+  .filters { gap: 8px; padding: 12px; }
+  .filters label, .filters .search-field { flex: 1 1 calc(50% - 8px); min-width: 125px; }
+  .filters .stock-filter, .filters .clear-filters { flex: 1 1 auto; justify-content: center; }
+}
