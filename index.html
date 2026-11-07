@@ -1,26 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="PeNaModa: moda para toda a família. Veja novidades, tamanhos e preços.">
-  <meta name="theme-color" content="#0A2E66">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PeNaModa: moda para toda a família."><meta name="theme-color" content="#0A2E66">
   <title>PeNaModa — Moda para toda a família</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/modern.css">
   <script type="module" src="assets/js/catalog.js"></script>
 </head>
 <body>
   <header class="hero">
-    <nav class="top-actions" aria-label="Ações da loja">
-      <a class="top-button admin-btn" href="admin.html">Área da loja</a>
-      <button class="top-button" id="abrir-carrinho" type="button" aria-haspopup="dialog" aria-controls="carrinho">🛒 Carrinho <span class="cart-count" id="quantidade-carrinho" aria-label="0 itens">0</span></button>
-    </nav>
+    <nav class="top-actions" aria-label="Ações da loja"><a class="top-button admin-btn" href="admin.html">Área da loja</a><a class="top-button" href="https://instagram.com/penamoda.ms" target="_blank" rel="noopener">Instagram @penamoda.ms</a><button class="top-button" id="abrir-carrinho" type="button" aria-haspopup="dialog" aria-controls="carrinho">🛒 Carrinho <span class="cart-count" id="quantidade-carrinho" aria-label="0 itens">0</span></button></nav>
     <a href="index.html" aria-label="PeNaModa — início"><img class="brand" src="assets/img/logo.svg" alt="PeNaModa — moda para toda a família" width="760" height="260"></a>
-    <p class="tagline">Moda para toda a família</p>
-    <p>Escolha seu tamanho, adicione ao carrinho e peça pelo WhatsApp.</p>
+    <p class="tagline">Moda para toda a família</p><p>Escolha seu tamanho, adicione ao carrinho e peça pelo WhatsApp.</p>
   </header>
   <main>
     <div class="section-heading"><div><h2>Novidades para você</h2><p>Encontre seu próximo look favorito.</p></div></div>
@@ -36,15 +29,22 @@
     <p class="results-count" id="resultado-filtros" aria-live="polite"></p>
     <div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
   </main>
-  <dialog id="carrinho" aria-labelledby="titulo-carrinho">
-    <section class="panel">
-      <div class="panel-heading"><h2 id="titulo-carrinho">Seu carrinho</h2><button class="close-button" data-close="carrinho" type="button" aria-label="Fechar carrinho">×</button></div>
-      <div class="cart-items" id="itens-carrinho" aria-live="polite"></div>
-      <div class="cart-total"><span>Total</span><span id="total-carrinho">R$ 0,00</span></div>
-      <p class="help-text" id="aviso-checkout"></p>
-      <button class="checkout" id="finalizar-pedido" type="button">Finalizar pedido pelo WhatsApp</button>
-    </section>
-  </dialog>
-  <footer class="site-footer">PeNaModa · Estilo para todos os momentos</footer>
+  <dialog id="carrinho" aria-labelledby="titulo-carrinho"><section class="panel">
+    <div class="panel-heading"><h2 id="titulo-carrinho">Seu carrinho</h2><button class="close-button" data-close="carrinho" type="button" aria-label="Fechar carrinho">×</button></div>
+    <div class="cart-items" id="itens-carrinho" aria-live="polite"></div><div class="cart-total"><span>Total</span><span id="total-carrinho">R$ 0,00</span></div>
+    <p class="help-text" id="aviso-checkout"></p><button class="checkout" id="finalizar-pedido" type="button">Finalizar pedido pelo WhatsApp</button>
+  </section></dialog>
+  <dialog id="dados-comprador" aria-labelledby="titulo-dados"><section class="panel">
+    <div class="panel-heading"><h2 id="titulo-dados">Dados para o pedido</h2><button class="close-button" data-close="dados-comprador" type="button" aria-label="Fechar">×</button></div>
+    <p>Preencha seus dados para concluir o pedido. Eles serão usados somente para registrar e atender sua compra.</p>
+    <form id="checkout-form" class="checkout-form">
+      <label>Nome completo<input id="nome-comprador" name="nome" autocomplete="name" maxlength="120" required></label>
+      <label>Data de nascimento<input id="nascimento-comprador" name="nascimento" type="date" required></label>
+      <label class="consent-row"><input id="consentimento-dados" type="checkbox" required> Concordo com o uso destes dados para atendimento do pedido e entendi que ficarão visíveis somente à administração da loja.</label>
+      <p class="admin-status" id="checkout-status" role="status" aria-live="polite"></p>
+      <button class="checkout" type="submit">Salvar dados e abrir WhatsApp</button>
+    </form>
+  </section></dialog>
+  <footer class="site-footer">PeNaModa · Estilo para todos os momentos · <a href="https://instagram.com/penamoda.ms" target="_blank" rel="noopener">Instagram</a></footer>
 </body>
 </html>
