@@ -19,6 +19,7 @@ const photoInput = $('foto-arquivo');
 const photoUrl = $('foto-url');
 const photoPreview = $('foto-preview');
 const removePhoto = $('remover-foto');
+const loginButton = loginForm.querySelector('button[type="submit"]');
 const sizeOptions = {
   FA: Array.from({ length: 10 }, (_, i) => String(i + 33)),
   MA: Array.from({ length: 12 }, (_, i) => String(i + 37)),
@@ -30,6 +31,7 @@ let selectedSizes = new Set();
 let customSizes = [];
 let previewObjectUrl = '';
 let schemaReady = true;
+let authBootstrapComplete = false;
 const setStatus = (text) => { status.textContent = text; };
 const isAdmin = (user) => Boolean(user && CONFIG.adminUserId && user.id === CONFIG.adminUserId);
 const value = (form, key) => String(form.get(key) || '').trim();
@@ -71,41 +73,25 @@ function syncSizes() {
   sizesHidden.value = [...selectedSizes, ...customSizes].join(',');
 }
 function renderSizeOptions(publico, initial = []) {
-  selectedSizes = new Set();
-  customSizes = [];
-  sizeSelector.replaceChildren();
-  customWrap.hidden = true;
-  customInput.value = '';
+  selectedSizes = new Set(); customSizes = []; sizeSelector.replaceChildren(); customWrap.hidden = true; customInput.value = '';
   const options = sizeOptions[publico] || [];
-  if (!publico) {
-    const note = document.createElement('p'); note.className = 'help-text'; note.textContent = 'Escolha o público para ver os tamanhos disponíveis.'; sizeSelector.append(note); sizesHidden.value = ''; return;
-  }
+  if (!publico) { const note = document.createElement('p'); note.className = 'help-text'; note.textContent = 'Escolha o público para ver os tamanhos disponíveis.'; sizeSelector.append(note); sizesHidden.value = ''; return; }
   options.forEach((size) => {
     const button = document.createElement('button'); button.type = 'button'; button.className = 'size-option'; button.textContent = size; button.setAttribute('aria-pressed', 'false');
-    button.addEventListener('click', () => {
-      if (selectedSizes.has(size)) selectedSizes.delete(size); else selectedSizes.add(size);
-      button.classList.toggle('selected', selectedSizes.has(size)); button.setAttribute('aria-pressed', String(selectedSizes.has(size)));
-      syncSizes();
-    });
+    button.addEventListener('click', () => { if (selectedSizes.has(size)) selectedSizes.delete(size); else selectedSizes.add(size); button.classList.toggle('selected', selectedSizes.has(size)); button.setAttribute('aria-pressed', String(selectedSizes.has(size))); syncSizes(); });
     sizeSelector.append(button);
   });
   const other = document.createElement('button'); other.type = 'button'; other.className = 'size-option size-other'; other.textContent = 'Outro'; other.setAttribute('aria-expanded', 'false');
   other.addEventListener('click', () => { customWrap.hidden = !customWrap.hidden; other.classList.toggle('selected', !customWrap.hidden); other.setAttribute('aria-expanded', String(!customWrap.hidden)); if (!customWrap.hidden) customInput.focus(); syncSizes(); });
   sizeSelector.append(other);
-  initial.forEach((size) => {
-    if (options.includes(size)) { selectedSizes.add(size); const button = [...sizeSelector.querySelectorAll('.size-option')].find((b) => b.textContent === size); button?.classList.add('selected'); button?.setAttribute('aria-pressed', 'true'); }
-  });
+  initial.forEach((size) => { if (options.includes(size)) { selectedSizes.add(size); const button = [...sizeSelector.querySelectorAll('.size-option')].find((b) => b.textContent === size); button?.classList.add('selected'); button?.setAttribute('aria-pressed', 'true'); } });
   const custom = initial.filter((size) => !options.includes(size));
   if (custom.length) { customWrap.hidden = false; other.classList.add('selected'); other.setAttribute('aria-expanded', 'true'); customInput.value = custom.join(', '); }
   syncSizes();
 }
 publicoSelect.addEventListener('change', () => renderSizeOptions(publicoSelect.value));
 customInput.addEventListener('input', syncSizes);
-function resetForm() {
-  productForm.reset(); editingId.value = ''; photoUrl.value = ''; clearPreview();
-  $('save-product').textContent = 'Salvar e publicar produto'; cancelEdit.hidden = true;
-  renderSizeOptions('');
-}
+function resetForm() { productForm.reset(); editingId.value = ''; photoUrl.value = ''; clearPreview(); $('save-product').textContent = 'Salvar e publicar produto'; cancelEdit.hidden = true; renderSizeOptions(''); }
 function renderProducts() {
   productList.replaceChildren();
   if (!products.length) { const empty = document.createElement('p'); empty.className = 'help-text'; empty.textContent = 'Nenhum produto cadastrado.'; productList.append(empty); return; }
@@ -134,8 +120,7 @@ async function loadProducts() {
 }
 async function uploadPhoto() {
   const file = photoInput.files?.[0]; if (!file) return photoUrl.value.trim();
-  const cleanName = file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g, '-');
-  const path = `${Date.now()}-${crypto.randomUUID()}-${cleanName}`;
+  const cleanName = file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g, '-'); const path = `${Date.now()}-${crypto.randomUUID()}-${cleanName}`;
   const { error } = await supabase.storage.from('produtos').upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
   if (error) throw new Error(`Falha no envio da foto. Verifique a configuração do Storage: ${error.message}`);
   return supabase.storage.from('produtos').getPublicUrl(path).data.publicUrl;
@@ -146,20 +131,48 @@ async function deleteProduct(p) {
   if (error) return setStatus(`Não foi possível excluir: ${error.message}`);
   setStatus('Produto excluído.'); await loadProducts();
 }
-if (!supabase) { loginForm.querySelector('button').disabled = true; setStatus(initializationError || 'Não foi possível conectar ao Supabase.'); }
-else {
-  supabase.auth.getSession().then(({ data, error }) => { if (error) console.error(error); const user = data?.session?.user || null; if (user && !isAdmin(user)) { void supabase.auth.signOut(); return; } setSession(user); if (user) void loadProducts(); });
-  supabase.auth.onAuthStateChange((_event, session) => { const user = session?.user || null; if (user && !isAdmin(user)) { void supabase.auth.signOut(); setSession(null); return; } setSession(user); if (user) setTimeout(() => void loadProducts(), 0); });
+
+// Para evitar que uma sessão antiga deixe o painel aberto sem pedir a senha,
+// encerramos qualquer sessão local ao abrir a página administrativa.
+setSession(null);
+loginButton.disabled = true;
+if (!supabase) {
+  setStatus(initializationError || 'Não foi possível conectar ao Supabase.');
+} else {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (!authBootstrapComplete) return;
+    if (event === 'SIGNED_OUT') { setSession(null); return; }
+    if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event) && session?.user) {
+      if (!isAdmin(session.user)) { void supabase.auth.signOut({ scope: 'local' }); setSession(null); setStatus('Esta conta não está autorizada como administradora.'); return; }
+      setSession(session.user);
+      if (event === 'SIGNED_IN') setTimeout(() => void loadProducts(), 0);
+    }
+  });
+  supabase.auth.signOut({ scope: 'local' }).then(({ error }) => {
+    if (error) console.warn('Não foi possível limpar a sessão anterior:', error);
+    authBootstrapComplete = true;
+    loginButton.disabled = false;
+    setSession(null);
+    setStatus('Digite seu e-mail e sua senha para entrar na área da loja.');
+  }).catch((error) => {
+    authBootstrapComplete = true;
+    loginButton.disabled = false;
+    setSession(null);
+    console.error(error);
+    setStatus('Digite seu e-mail e sua senha para entrar na área da loja.');
+  });
 }
 loginForm.addEventListener('submit', async (event) => {
-  event.preventDefault(); if (!supabase) return;
+  event.preventDefault(); if (!supabase) return setStatus(initializationError || 'Supabase indisponível.');
   const email = $('admin-email').value.trim(); const password = $('admin-password').value;
-  setStatus('Entrando…'); const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  loginButton.disabled = true; setStatus('Entrando…');
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  loginButton.disabled = false;
   if (error) return setStatus('Não foi possível entrar. Confira o e-mail e a senha no Supabase.');
-  if (!isAdmin(data.user)) { await supabase.auth.signOut(); return setStatus('Esta conta não está autorizada como administradora.'); }
+  if (!isAdmin(data.user)) { await supabase.auth.signOut({ scope: 'local' }); setSession(null); setStatus('Esta conta não está autorizada como administradora.'); return; }
   setSession(data.user); $('admin-password').value = ''; await loadProducts();
 });
-$('sign-out').addEventListener('click', async () => { await supabase.auth.signOut(); setSession(null); resetForm(); setStatus('Você saiu da área administrativa.'); });
+$('sign-out').addEventListener('click', async () => { if (supabase) await supabase.auth.signOut({ scope: 'local' }); setSession(null); resetForm(); setStatus('Você saiu da área administrativa.'); });
 cancelEdit.addEventListener('click', resetForm);
 productForm.addEventListener('submit', async (event) => {
   event.preventDefault(); if (!supabase) return setStatus('Supabase indisponível.');
