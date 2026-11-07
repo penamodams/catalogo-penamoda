@@ -1,40 +1,17 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Acesso administrativo e gestão de produtos PeNaModa."><meta name="theme-color" content="#0A2E66">
-  <title>Área da loja — PeNaModa</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/site.css"><script type="module" src="assets/js/admin.js"></script>
-</head>
-<body>
-  <header class="hero admin-hero"><nav class="top-actions" aria-label="Navegação"><a class="top-button" href="index.html">← Voltar ao catálogo</a><a class="top-button" href="index.html">Ver loja</a></nav><a href="index.html" aria-label="PeNaModa — início"><img class="brand" src="assets/img/logo.svg" alt="PeNaModa" width="760" height="260"></a><p class="tagline">Painel administrativo</p><p>Cadastre, edite e controle os produtos da loja.</p></header>
-  <main class="admin-main">
-    <section class="admin-card" aria-labelledby="admin-heading">
-      <h1 id="admin-heading">Área da loja</h1>
-      <p class="admin-note">Acesse com o e-mail e a senha da conta administradora do Supabase. A segurança das alterações também é aplicada no banco.</p>
-      <form class="admin-form" id="login-form"><label>E-mail<input id="admin-email" type="email" autocomplete="username" required></label><label>Senha<input id="admin-password" type="password" autocomplete="current-password" required></label><button class="primary-button" type="submit">Entrar</button></form>
-      <div id="admin-session" hidden>
-        <div class="admin-session-bar"><p id="admin-user"></p><button class="secondary-button" id="sign-out" type="button">Sair</button></div>
-        <h2 id="form-title">Cadastrar produto</h2>
-        <form class="admin-form" id="product-form">
-          <input type="hidden" id="editing-id">
-          <label>Nome claro (marca + produto + cor/público)<input name="descricao" type="text" maxlength="160" required placeholder="Ex.: Tênis Beira Rio Casual Branco Feminino"></label>
-          <label>Preço em reais<input name="valor" type="number" min="0" step="0.01" required placeholder="89.90"></label>
-          <label>Público<select name="publico"><option value="">Selecione</option><option>Feminino</option><option>Masculino</option><option>Infantil</option><option>Unissex</option></select></label>
-          <label>Categoria<select name="categoria"><option value="">Selecione</option><option>Calçados</option><option>Vestuário</option><option>Meias</option><option>Acessórios</option></select></label>
-          <label>Cor<input name="cor" type="text" maxlength="60" placeholder="Ex.: Branco, Nude/Bege, Rosa"></label>
-          <label>Tamanhos/numerações separados por vírgula<input name="tamanhos" type="text" maxlength="160" placeholder="Ex.: 33, 34, 35, 36 ou PP, P, M, G, GG"></label>
-          <label>Estoque total (unidades)<input name="estoque" type="number" min="0" step="1" placeholder="Deixe vazio se ainda não controlar"></label>
-          <label>Foto (URL pública ou caminho no repositório)<input name="foto" type="text" maxlength="500" placeholder="Ex.: imagens/tenis-branco.jpg"></label>
-          <p class="help-text">Fotos públicas devem mostrar o produto inteiro e com boa iluminação. Para vários ângulos, adicione links às descrições até configurar galeria de imagens.</p>
-          <div class="form-actions"><button class="primary-button" id="save-product" type="submit">Salvar e publicar produto</button><button class="secondary-button" id="cancel-edit" type="button" hidden>Cancelar edição</button></div>
-        </form>
-        <h2>Produtos cadastrados</h2><div id="admin-product-list" class="admin-product-list" aria-live="polite"></div>
-      </div>
-      <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
-    </section>
-  </main><footer class="site-footer">PeNaModa · Painel administrativo</footer>
-</body>
-</html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0A2E66"><meta name="site-version" content="1.1.3"><title>Área da loja — PeNaModa</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/admin-products.css"><script type="module" src="assets/js/admin.js?v=1.1.3"></script></head>
+<body><header class="hero admin-hero"><nav class="top-actions" aria-label="Navegação"><a class="top-button" href="index.html">← Voltar ao catálogo</a></nav><a href="index.html"><img class="brand" src="assets/img/logo.svg" alt="PeNaModa" width="760" height="260"></a><p class="tagline">Área da loja</p></header>
+<main class="admin-main"><section class="admin-card" aria-labelledby="admin-heading"><h1 id="admin-heading">Painel da loja</h1><p class="admin-note">Acesse com o e-mail e a senha da conta administradora do Supabase.</p>
+<form class="admin-form" id="login-form"><label>E-mail<input id="admin-email" type="email" autocomplete="username" required></label><label>Senha<input id="admin-password" type="password" autocomplete="current-password" required></label><button class="primary-button" type="submit">Entrar</button></form>
+<div id="admin-session" hidden><div class="admin-session-bar"><p id="admin-user"></p><button class="secondary-button" id="sign-out" type="button">Sair</button></div><h2 id="form-title">Cadastrar produto</h2>
+<form class="admin-form" id="product-form"><input type="hidden" id="editing-id">
+<label>SKU / código do produto<input name="codigo" type="text" maxlength="60" placeholder="Ex.: 3452A"></label>
+<label>Descrição do produto<textarea name="descricao" maxlength="500" rows="3" required placeholder="Nome e detalhes do produto"></textarea></label>
+<label>Gênero / público<select name="publico" id="publico-select" required><option value="">Selecione</option><option value="FA">FA — Feminino Adulto</option><option value="MA">MA — Masculino Adulto</option><option value="FI">FI — Feminino Infantil</option><option value="MI">MI — Masculino Infantil</option></select></label>
+<div class="size-selector-wrap"><span class="form-label">Tamanhos disponíveis <small>(selecione vários)</small></span><div id="size-selector" class="size-selector" aria-label="Tamanhos disponíveis"></div><input type="hidden" name="tamanhos" id="tamanhos-hidden"><div id="custom-size-wrap" hidden><label>Outros tamanhos, separados por vírgula<input id="custom-size-input" type="text" maxlength="120" placeholder="Ex.: 42,5, PP, GG"></label></div></div>
+<label>Categoria<select name="categoria"><option value="">Selecione</option><option>Calçados</option><option>Vestuário</option><option>Meias</option><option>Acessórios</option></select></label><label>Cor<input name="cor" type="text" maxlength="60" placeholder="Ex.: Branco, Nude, Rosa"></label>
+<label>Preço de venda (R$)<input name="valor" type="number" min="0" step="0.01" required placeholder="89.90"></label><label>Preço promocional (R$) — opcional<input name="preco_desconto" type="number" min="0" step="0.01" placeholder="69.90"></label>
+<label>Estoque total (unidades)<input name="estoque" type="number" min="0" step="1" placeholder="Deixe vazio se não controlar"></label>
+<div class="upload-field"><label for="foto-arquivo">Foto do produto (JPG, PNG ou WebP)</label><input id="foto-arquivo" type="file" accept="image/jpeg,image/png,image/webp"><div class="photo-preview-wrap"><img id="foto-preview" alt="Prévia da foto do produto" hidden><button id="remover-foto" type="button" class="secondary-button" hidden>Remover foto</button></div><label>Ou informe uma URL/caminho público<input name="foto" id="foto-url" type="text" maxlength="500" placeholder="https://... ou caminho da imagem"></label><p class="help-text">A foto selecionada será enviada ao armazenamento público de imagens da loja.</p></div>
+<div class="form-actions"><button class="primary-button" id="save-product" type="submit">Salvar e publicar produto</button><button class="secondary-button" id="cancel-edit" type="button" hidden>Cancelar edição</button></div></form>
+<h2>Produtos cadastrados</h2><div id="admin-product-list" class="admin-product-list" aria-live="polite"></div></div><p class="admin-status" id="admin-status" role="status" aria-live="polite"></p></section></main><footer class="site-footer">PeNaModa · Painel administrativo <span class="admin-version">Versão 1.1.3</span></footer></body></html>

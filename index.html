@@ -1,53 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="PeNaModa: moda para toda a família. Veja novidades, tamanhos e preços.">
-  <meta name="theme-color" content="#0A2E66">
-  <meta name="site-version" content="1.1.2">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PeNaModa: moda para toda a família. Veja novidades, tamanhos e preços."><meta name="theme-color" content="#0A2E66">
+  <meta name="site-version" content="1.1.3">
   <title>PeNaModa — Moda para toda a família</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/site.css">
-  <link rel="stylesheet" href="assets/css/compact-filters.css?v=1.1.2">
-  <style>.site-version{display:inline-block;margin-left:.5rem;padding:.2rem .55rem;border:1px solid #e4e7ec;border-radius:999px;color:#667085;font-size:.72rem;vertical-align:middle}</style>
-  <script type="module" src="assets/js/catalog.js"></script>
+  <link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/compact-filters.css?v=1.1.2">
+  <style>.site-version{display:inline-block;margin-left:.5rem;padding:.2rem .55rem;border:1px solid #e4e7ec;border-radius:999px;color:#667085;font-size:.72rem;vertical-align:middle}.price-old{margin:0;color:#667085;font-size:.9rem;text-decoration:line-through}.price-current{margin:.15rem 0;color:#0A2E66;font-weight:800;font-size:1.2rem}</style>
+  <script type="module" src="assets/js/catalog.js?v=1.1.3"></script>
 </head>
 <body>
-  <header class="hero">
-    <nav class="top-actions" aria-label="Ações da loja">
-      <a class="top-button admin-btn" href="admin.html">Área da loja</a>
-      <button class="top-button" id="abrir-carrinho" type="button" aria-haspopup="dialog" aria-controls="carrinho">🛒 Carrinho <span class="cart-count" id="quantidade-carrinho" aria-label="0 itens">0</span></button>
-    </nav>
-    <a href="index.html" aria-label="PeNaModa — início"><img class="brand" src="assets/img/logo.svg" alt="PeNaModa — moda para toda a família" width="760" height="260"></a>
-    <p class="tagline">Moda para toda a família</p>
-    <p>Escolha seu tamanho, adicione ao carrinho e peça pelo WhatsApp.</p>
+  <header class="hero"><nav class="top-actions" aria-label="Ações da loja"><a class="top-button admin-btn" href="admin.html">Área da loja</a><button class="top-button" id="abrir-carrinho" type="button" aria-haspopup="dialog" aria-controls="carrinho">🛒 Carrinho <span class="cart-count" id="quantidade-carrinho" aria-label="0 itens">0</span></button></nav>
+    <a href="index.html" aria-label="PeNaModa — início"><img class="brand" src="assets/img/logo.svg" alt="PeNaModa — moda para toda a família" width="760" height="260"></a><p class="tagline">Moda para toda a família</p><p>Escolha seu tamanho, adicione ao carrinho e peça pelo WhatsApp.</p>
   </header>
-  <main>
-    <div class="section-heading"><div><h2>Novidades para você</h2><p>Encontre seu próximo look favorito.</p></div></div>
+  <main><div class="section-heading"><div><h2>Novidades para você</h2><p>Encontre seu próximo look favorito.</p></div></div>
     <section class="filters" aria-label="Filtros de produtos">
       <label class="search-field">Buscar produto<input id="busca-produtos" type="search" placeholder="Nome, marca ou modelo" autocomplete="off"></label>
-      <label>Departamento<select id="filtro-publico"><option value="">Todos</option></select></label>
-      <label>Categoria<select id="filtro-categoria"><option value="">Todas</option></select></label>
-      <label>Tamanho / numeração<select id="filtro-tamanho"><option value="">Todos</option></select></label>
-      <label>Cor<select id="filtro-cor"><option value="">Todas</option></select></label>
-      <label class="stock-filter"><input id="somente-disponiveis" type="checkbox"> Somente disponíveis</label>
-      <button class="secondary-button clear-filters" id="limpar-filtros" type="button">Limpar filtros</button>
-    </section>
-    <p class="results-count" id="resultado-filtros" aria-live="polite"></p>
-    <div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
+      <label>Departamento<select id="filtro-publico"><option value="">Todos</option></select></label><label>Categoria<select id="filtro-categoria"><option value="">Todas</option></select></label>
+      <label>Tamanho / numeração<select id="filtro-tamanho"><option value="">Todos</option></select></label><label>Cor<select id="filtro-cor"><option value="">Todas</option></select></label>
+      <label class="stock-filter"><input id="somente-disponiveis" type="checkbox"> Somente disponíveis</label><button class="secondary-button clear-filters" id="limpar-filtros" type="button">Limpar filtros</button>
+    </section><p class="results-count" id="resultado-filtros" aria-live="polite"></p><div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
   </main>
-  <dialog id="carrinho" aria-labelledby="titulo-carrinho">
-    <section class="panel">
-      <div class="panel-heading"><h2 id="titulo-carrinho">Seu carrinho</h2><button class="close-button" data-close="carrinho" type="button" aria-label="Fechar carrinho">×</button></div>
-      <div class="cart-items" id="itens-carrinho" aria-live="polite"></div>
-      <div class="cart-total"><span>Total</span><span id="total-carrinho">R$ 0,00</span></div>
-      <p class="help-text" id="aviso-checkout"></p>
-      <button class="checkout" id="finalizar-pedido" type="button">Finalizar pedido pelo WhatsApp</button>
-    </section>
-  </dialog>
-  <footer class="site-footer">PeNaModa · Estilo para todos os momentos <span class="site-version">Versão 1.1.2</span></footer>
-</body>
-</html>
+  <dialog id="carrinho" aria-labelledby="titulo-carrinho"><section class="panel"><div class="panel-heading"><h2 id="titulo-carrinho">Seu carrinho</h2><button class="close-button" data-close="carrinho" type="button" aria-label="Fechar carrinho">×</button></div><div class="cart-items" id="itens-carrinho" aria-live="polite"></div><div class="cart-total"><span>Total</span><span id="total-carrinho">R$ 0,00</span></div><p class="help-text" id="aviso-checkout"></p><button class="checkout" id="finalizar-pedido" type="button">Finalizar pedido pelo WhatsApp</button></section></dialog>
+  <footer class="site-footer">PeNaModa · Estilo para todos os momentos <span class="site-version">Versão 1.1.3</span></footer>
+</body></html>
