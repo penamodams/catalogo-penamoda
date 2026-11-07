@@ -72,25 +72,54 @@ function configureFilters() {
   updateOptions('filtro-categoria', [...new Set(products.map((p) => p.categoria).filter(Boolean))], 'Todas');
   updateOptions('filtro-cor', [...new Set(products.map((p) => p.cor).filter(Boolean))], 'Todas');
   updateOptions('filtro-tamanho', [...new Set(products.flatMap((p) => listValues(p.tamanhos)))], 'Todos');
-  document.querySelectorAll('.filters select, .filters input').forEach((control) => control.addEventListener('input', applyFilters));
-  document.getElementById('limpar-filtros').addEventListener('click', () => { document.querySelectorAll('.filters select').forEach((select) => { select.value = ''; }); document.getElementById('busca-produtos').value = ''; document.getElementById('somente-disponiveis').checked = false; applyFilters(); });
+  document.querySelectorAll('#painel-filtros select, #painel-filtros input').forEach((control) => {
+    control.addEventListener('input', applyFilters);
+    control.addEventListener('change', applyFilters);
+  });
+  document.getElementById('limpar-filtros').addEventListener('click', () => {
+    document.querySelectorAll('#painel-filtros select').forEach((select) => { select.value = select.id === 'ordenar-produtos' ? 'relevancia' : ''; });
+    ['busca-produtos','preco-min','preco-max'].forEach((id) => { document.getElementById(id).value = ''; });
+    document.getElementById('somente-disponiveis').checked = false;
+    applyFilters();
+  });
+  document.getElementById('abrir-filtros').addEventListener('click', () => {
+    const panel = document.getElementById('painel-filtros');
+    const open = panel.classList.toggle('filters-open');
+    document.getElementById('abrir-filtros').setAttribute('aria-expanded', String(open));
+  });
 }
 function applyFilters() {
   const search = document.getElementById('busca-produtos').value.trim().toLocaleLowerCase('pt-BR');
   const audience = document.getElementById('filtro-publico').value, category = document.getElementById('filtro-categoria').value;
   const color = document.getElementById('filtro-cor').value, size = document.getElementById('filtro-tamanho').value;
   const availableOnly = document.getElementById('somente-disponiveis').checked;
-  let visible = 0;
+  const minValue = document.getElementById('preco-min').value === '' ? null : Number(document.getElementById('preco-min').value);
+  const maxValue = document.getElementById('preco-max').value === '' ? null : Number(document.getElementById('preco-max').value);
+  const sort = document.getElementById('ordenar-produtos').value;
+  const matches = [];
   catalog.querySelectorAll('.card:not(.skeleton)').forEach((card) => {
     const product = products.find((item) => String(item.id || '') === card.dataset.id && card.dataset.id) || products.find((item) => item.descricao === card.dataset.name);
     if (!product) { card.hidden = true; return; }
-    const text = [product.descricao, product.publico, product.categoria, product.cor].join(' ').toLocaleLowerCase('pt-BR');
+    const text = [product.descricao, product.publico, product.categoria, product.cor, product.marca, product.modelo].join(' ').toLocaleLowerCase('pt-BR');
     const stock = product.estoque === null || product.estoque === undefined || product.estoque === '' ? null : Number(product.estoque);
-    const matches = (!search || text.includes(search)) && (!audience || product.publico === audience) && (!category || product.categoria === category) && (!color || product.cor === color) && (!size || listValues(product.tamanhos).includes(size)) && (!availableOnly || (stock !== null && stock > 0));
-    card.hidden = !matches; if (matches) visible++;
+    const price = Number(product.valor);
+    const validPrice = Number.isFinite(price);
+    const ok = (!search || text.includes(search)) && (!audience || product.publico === audience) && (!category || product.categoria === category) && (!color || product.cor === color) && (!size || listValues(product.tamanhos).includes(size)) && (!availableOnly || (stock !== null && stock > 0)) && (minValue === null || (validPrice && price >= minValue)) && (maxValue === null || (validPrice && price <= maxValue));
+    card.hidden = !ok;
+    if (ok) matches.push({card, product, price});
   });
-  document.getElementById('resultado-filtros').textContent = `${visible} ${visible === 1 ? 'produto encontrado' : 'produtos encontrados'}`;
-  if (!visible && products.length) { let empty = catalog.querySelector('.filter-empty'); if (!empty) { empty = document.createElement('div'); empty.className = 'state filter-empty'; empty.textContent = 'Nenhum produto corresponde aos filtros.'; catalog.append(empty); } } else catalog.querySelector('.filter-empty')?.remove();
+  matches.sort((a,b) => sort === 'menor-preco' ? a.price-b.price : sort === 'maior-preco' ? b.price-a.price : sort === 'nome' ? String(a.product.descricao).localeCompare(String(b.product.descricao),'pt-BR') : 0);
+  matches.forEach(({card}) => catalog.append(card));
+  const visible = matches.length;
+  document.getElementById('resultado-filtros').textContent = visible ? `${visible} ${visible === 1 ? 'produto encontrado' : 'produtos encontrados'}` : 'Nenhum produto encontrado com esses filtros.';
+  const active = [];
+  if (search) active.push(['Busca: '+search, 'busca-produtos']);
+  [[audience,'filtro-publico'],[category,'filtro-categoria'],[size,'filtro-tamanho'],[color,'filtro-cor']].forEach(([v,id])=>{if(v)active.push([v,id]);});
+  if(minValue!==null)active.push(['A partir de '+money(minValue),'preco-min']);
+  if(maxValue!==null)active.push(['Até '+money(maxValue),'preco-max']);
+  if(availableOnly)active.push(['Disponíveis','somente-disponiveis']);
+  const chips=document.getElementById('filtros-ativos'); chips.replaceChildren();
+  active.forEach(([label,id])=>{const chip=document.createElement('button');chip.type='button';chip.className='filter-chip';chip.textContent=label+' ×';chip.addEventListener('click',()=>{const el=document.getElementById(id);if(el.type==='checkbox')el.checked=false;else el.value='';applyFilters();});chips.append(chip);});
 }
 async function loadProducts() {
   const request = ++requestNumber; showLoading();
