@@ -15,13 +15,27 @@
   <header class="hero"><nav class="top-actions" aria-label="Ações da loja"><a class="top-button admin-btn" href="admin.html">Área da loja</a><button class="top-button" id="abrir-carrinho" type="button" aria-haspopup="dialog" aria-controls="carrinho">🛒 Carrinho <span class="cart-count" id="quantidade-carrinho" aria-label="0 itens">0</span></button></nav>
     <a href="index.html" aria-label="PeNaModa — início"><img class="brand" src="assets/img/logo.svg" alt="PeNaModa — moda para toda a família" width="760" height="260"></a><p class="tagline">Moda para toda a família</p><p>Escolha seu tamanho, adicione ao carrinho e peça pelo WhatsApp.</p>
   </header>
-  <main><div class="section-heading"><div><h2>Novidades para você</h2><p>Encontre seu próximo look favorito.</p></div></div>
-    <section class="filters" aria-label="Filtros de produtos">
-      <label class="search-field">Buscar produto<input id="busca-produtos" type="search" placeholder="Nome, marca ou modelo" autocomplete="off"></label>
-      <label>Departamento<select id="filtro-publico"><option value="">Todos</option></select></label><label>Categoria<select id="filtro-categoria"><option value="">Todas</option></select></label>
-      <label>Tamanho / numeração<select id="filtro-tamanho"><option value="">Todos</option></select></label><label>Cor<select id="filtro-cor"><option value="">Todas</option></select></label>
-      <label class="stock-filter"><input id="somente-disponiveis" type="checkbox"> Somente disponíveis</label><button class="secondary-button clear-filters" id="limpar-filtros" type="button">Limpar filtros</button>
-    </section><p class="results-count" id="resultado-filtros" aria-live="polite"></p><div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
+  <main>
+    <div class="section-heading"><div><h2>Novidades para você</h2><p>Encontre seu próximo look favorito.</p></div></div>
+    <section class="finder" aria-label="Encontre seu produto">
+      <div class="finder-intro"><div><span class="eyebrow">SEU PRÓXIMO ACHADO ESTÁ AQUI</span><h2>Encontre o que você procura</h2><p>Escolha suas preferências e veja o que temos na loja.</p></div><button class="filter-toggle" id="abrir-filtros" type="button" aria-expanded="true" aria-controls="painel-filtros">☷ Filtros</button></div>
+      <div class="filters" id="painel-filtros">
+        <label class="search-field">O que você está procurando?<input id="busca-produtos" type="search" placeholder="Ex.: tênis branco, sandália, Beira Rio..." autocomplete="off"></label>
+        <div class="filter-grid">
+          <label>Departamento<select id="filtro-publico"><option value="">Todos</option></select></label>
+          <label>Categoria<select id="filtro-categoria"><option value="">Todas</option></select></label>
+          <label>Tamanho / numeração<select id="filtro-tamanho"><option value="">Todos</option></select></label>
+          <label>Cor<select id="filtro-cor"><option value="">Todas</option></select></label>
+          <label>Preço mínimo (R$)<input id="preco-min" type="number" min="0" step="1" placeholder="Qualquer valor"></label>
+          <label>Preço máximo (R$)<input id="preco-max" type="number" min="0" step="1" placeholder="Sem limite"></label>
+          <label>Ordenar por<select id="ordenar-produtos"><option value="relevancia">Mais relevantes</option><option value="menor-preco">Menor preço</option><option value="maior-preco">Maior preço</option><option value="nome">Nome A–Z</option></select></label>
+        </div>
+        <div class="filter-bottom"><label class="stock-filter"><input id="somente-disponiveis" type="checkbox"> Mostrar somente disponíveis</label><button class="secondary-button clear-filters" id="limpar-filtros" type="button">Limpar tudo</button></div>
+      </div>
+      <div class="active-filters" id="filtros-ativos" aria-live="polite"></div>
+    </section>
+    <div class="results-toolbar"><p class="results-count" id="resultado-filtros" aria-live="polite"></p></div>
+    <div class="grid" id="catalogo" aria-live="polite" aria-busy="true" aria-label="Produtos do catálogo"></div>
   </main>
   <dialog id="carrinho" aria-labelledby="titulo-carrinho"><section class="panel"><div class="panel-heading"><h2 id="titulo-carrinho">Seu carrinho</h2><button class="close-button" data-close="carrinho" type="button" aria-label="Fechar carrinho">×</button></div><div class="cart-items" id="itens-carrinho" aria-live="polite"></div><div class="cart-total"><span>Total</span><span id="total-carrinho">R$ 0,00</span></div><p class="help-text" id="aviso-checkout"></p><button class="checkout" id="finalizar-pedido" type="button">Finalizar pedido pelo WhatsApp</button></section></dialog>
   <footer class="site-footer">PeNaModa · Estilo para todos os momentos <span class="site-version">Versão 1.1.3</span></footer>

@@ -17,24 +17,111 @@ function cardFor(p, index) {
   const card = document.createElement('article'); card.className = 'card'; card.dataset.id = String(p.id || ''); card.dataset.name = name;
   const frame = document.createElement('div'); frame.className = 'photo'; const img = document.createElement('img'); img.src = imageUrl(p.foto); img.alt = name; img.width = 400; img.height = 500; img.decoding = 'async'; if (index > 3) img.loading = 'lazy'; img.onerror = () => { img.src = fallbackImage(); }; frame.append(img);
   const title = document.createElement('h3'); title.textContent = name;
-  const sku = document.createElement('p'); sku.className = 'product-meta'; sku.textContent = `SKU: ${p.codigo || p.id || '—'}`;
-  const audience = p.publico ? document.createElement('p') : null; if (audience) { audience.className = 'product-meta'; audience.textContent = publicNames[p.publico] || p.publico; }
-  const priceBox = document.createElement('div'); if (price < regular) { const old = document.createElement('p'); old.className = 'price-old'; old.textContent = money(regular); const sale = document.createElement('p'); sale.className = 'price-current'; sale.textContent = money(price); priceBox.append(old, sale); } else { const normal = document.createElement('p'); normal.className = 'price'; normal.textContent = validPrice ? money(price) : 'Consulte'; priceBox.append(normal); }
-  card.append(frame, title, sku); if (audience) card.append(audience); card.append(priceBox);
-  if (p.cor) { const color = document.createElement('p'); color.className = 'product-meta'; color.textContent = `Cor: ${p.cor}`; card.append(color); }
-  const sizes = sizesOf(p.tamanhos); if (sizes.length) { const group = document.createElement('div'); group.className = 'sizes'; group.setAttribute('role', 'group'); group.setAttribute('aria-label', `Escolha um tamanho de ${name}`); sizes.forEach((s) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'size-btn'; b.textContent = s; b.setAttribute('aria-pressed', 'false'); group.append(b); }); card.append(group); }
-  if (stock !== null && Number.isFinite(stock)) { const availability = document.createElement('p'); availability.className = stock > 0 ? 'stock-available' : 'stock-unavailable'; availability.textContent = stock > 0 ? `${stock} disponível(is)` : 'Esgotado'; card.append(availability); }
-  const add = document.createElement('button'); add.type = 'button'; add.className = 'add-cart'; add.textContent = 'Adicionar ao carrinho'; add.disabled = !validPrice || stock === 0; const notice = document.createElement('p'); notice.className = 'card-notice'; notice.setAttribute('aria-live', 'polite'); card.append(add, notice); return card;
+  const priceElement = document.createElement('p'); priceElement.className = 'price'; priceElement.textContent = validPrice ? money(price) : 'Consulte';
+  card.append(frame, title, priceElement);
+  if (product.cor) { const color = document.createElement('p'); color.className = 'product-meta'; color.textContent = `Cor: ${product.cor}`; card.append(color); }
+  if (stock !== null && Number.isFinite(stock)) { const availability = document.createElement('p'); availability.className = stock > 0 ? 'stock-available' : 'stock-unavailable'; availability.textContent = stock > 0 ? `Disponível · ${stock} em estoque` : 'Esgotado'; card.append(availability); }
+  const sizes = listValues(product.tamanhos);
+  if (sizes.length) { const group = document.createElement('div'); group.className = 'sizes'; group.setAttribute('role', 'group'); group.setAttribute('aria-label', `Escolha o tamanho de ${name}`); sizes.forEach((size) => { const button = document.createElement('button'); button.type = 'button'; button.className = 'size-btn'; button.setAttribute('aria-pressed', 'false'); button.textContent = size; group.append(button); }); card.append(group); }
+  const add = document.createElement('button'); add.type = 'button'; add.className = 'add-cart'; add.textContent = 'Adicionar ao carrinho'; add.disabled = !validPrice || stock === 0;
+  const notice = document.createElement('p'); notice.className = 'card-notice'; notice.setAttribute('aria-live', 'polite'); card.append(add, notice); return card;
 }
-function options(id, vals, label) { const el = document.getElementById(id); const prior = el.value; el.replaceChildren(new Option(label, '')); [...new Set(vals.filter(Boolean))].sort((a,b) => a.localeCompare(b,'pt-BR')).forEach((v) => el.add(new Option(id === 'filtro-publico' ? (publicNames[v] || v) : v, v))); if ([...el.options].some((o) => o.value === prior)) el.value = prior; }
-function applyFilters() { const q = document.getElementById('busca-produtos').value.trim().toLocaleLowerCase('pt-BR'); const audience = document.getElementById('filtro-publico').value; const category = document.getElementById('filtro-categoria').value; const color = document.getElementById('filtro-cor').value; const size = document.getElementById('filtro-tamanho').value; const available = document.getElementById('somente-disponiveis').checked; let count = 0;
-  catalog.querySelectorAll('.card').forEach((card) => { const p = products.find((x) => String(x.id || '') === card.dataset.id) || products.find((x) => x.descricao === card.dataset.name); if (!p) return; const text = [p.descricao,p.codigo,p.publico,publicNames[p.publico],p.categoria,p.cor].join(' ').toLocaleLowerCase('pt-BR'); const stock = p.estoque == null || p.estoque === '' ? null : Number(p.estoque); const match = (!q || text.includes(q)) && (!audience || p.publico === audience) && (!category || p.categoria === category) && (!color || p.cor === color) && (!size || sizesOf(p.tamanhos).includes(size)) && (!available || (stock !== null && stock > 0)); card.hidden = !match; if (match) count++; });
-  document.getElementById('resultado-filtros').textContent = `${count} ${count === 1 ? 'produto encontrado' : 'produtos encontrados'}`; let empty = catalog.querySelector('.filter-empty'); if (!count && products.length) { if (!empty) { empty = document.createElement('div'); empty.className = 'state filter-empty'; empty.textContent = 'Nenhum produto encontrado com esses filtros.'; catalog.append(empty); } } else empty?.remove(); }
-function configureFilters() { options('filtro-publico', products.map((p) => p.publico), 'Todos'); options('filtro-categoria', products.map((p) => p.categoria), 'Todas'); options('filtro-cor', products.map((p) => p.cor), 'Todas'); options('filtro-tamanho', products.flatMap((p) => sizesOf(p.tamanhos)), 'Todos'); document.querySelectorAll('.filters select').forEach((x) => x.addEventListener('change', applyFilters)); document.querySelectorAll('.filters input').forEach((x) => x.addEventListener('input', applyFilters)); document.getElementById('limpar-filtros').addEventListener('click', () => { document.querySelectorAll('.filters select').forEach((x) => x.value = ''); document.getElementById('busca-produtos').value = ''; document.getElementById('somente-disponiveis').checked = false; applyFilters(); }); }
-function showState(title, message, retry = false) { catalog.setAttribute('aria-busy', 'false'); const box = document.createElement('div'); box.className = 'state'; const strong = document.createElement('strong'); strong.textContent = title; const text = document.createElement('span'); text.textContent = message; box.append(strong, text); if (retry) { const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Tentar de novo'; b.addEventListener('click', loadProducts); box.append(b); } catalog.replaceChildren(box); }
-async function loadProducts() { catalog.setAttribute('aria-busy', 'true'); catalog.replaceChildren(); if (!supabase) return showState('Catálogo indisponível', initializationError || 'Confira a conexão com o Supabase.', true); let response = await supabase.from('produtos').select('id, codigo, descricao, valor, preco_desconto, tamanhos, foto, publico, categoria, cor, estoque'); if (response.error && /column|schema cache|does not exist|not found/i.test(response.error.message || '')) response = await supabase.from('produtos').select('id, descricao, valor, tamanhos, foto, publico, categoria, cor, estoque'); if (response.error && /column|schema cache|does not exist|not found/i.test(response.error.message || '')) response = await supabase.from('produtos').select('descricao, valor, tamanhos, foto'); if (response.error) { console.error(response.error); return showState('Erro ao carregar catálogo', 'Verifique conexão e permissões do Supabase.', true); } products = response.data || []; if (!products.length) return showState('Nenhum produto por aqui ainda', 'Em breve teremos novidades!'); catalog.append(...products.map(cardFor)); catalog.setAttribute('aria-busy','false'); configureFilters(); applyFilters(); }
-function renderCart() { cartList.replaceChildren(); if (!cart.length) { const p = document.createElement('p'); p.className = 'cart-empty'; p.textContent = 'Seu carrinho está vazio.'; cartList.append(p); } cart.forEach((item, i) => { const row = document.createElement('article'); row.className = 'cart-item'; if (item.image) { const img = document.createElement('img'); img.src = item.image; img.alt = ''; img.className = 'cart-thumb'; row.append(img); } const detail = document.createElement('div'); const title = document.createElement('h3'); title.textContent = item.name; const info = document.createElement('p'); info.textContent = [`SKU: ${item.code || '—'}`,item.color && `Cor: ${item.color}`,`Tamanho: ${item.size}`].filter(Boolean).join(' · '); const amount = document.createElement('p'); amount.textContent = `${item.quantity} × ${money(item.price)} = ${money(item.price * item.quantity)}`; detail.append(title,info,amount); const controls = document.createElement('div'); controls.className = 'cart-controls'; [['decrease','−'],['increase','+'],['remove','×']].forEach(([action,label]) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.action = action; b.dataset.index = String(i); b.textContent = label; controls.append(b); }); row.append(detail,controls); cartList.append(row); }); const qty = cart.reduce((n,x) => n+x.quantity,0); document.getElementById('quantidade-carrinho').textContent = String(qty); document.getElementById('total-carrinho').textContent = money(cart.reduce((n,x) => n+x.price*x.quantity,0)); document.getElementById('finalizar-pedido').disabled = !cart.length || !phone; document.getElementById('aviso-checkout').textContent = phone ? '' : 'Configure o WhatsApp comercial em assets/js/config.js.'; saveCart(); }
-cartList.addEventListener('click', (e) => { const b = e.target.closest('[data-action]'); if (!b) return; const i = Number(b.dataset.index); if (!cart[i]) return; if (b.dataset.action === 'remove') cart.splice(i,1); else if (b.dataset.action === 'decrease') { if (--cart[i].quantity < 1) cart.splice(i,1); } else cart[i].quantity++; renderCart(); });
+function updateOptions(id, values, firstLabel) {
+  const select = document.getElementById(id); const previous = select.value;
+  select.replaceChildren(new Option(firstLabel, ''));
+  values.sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach((value) => select.add(new Option(value, value)));
+  if (values.includes(previous)) select.value = previous;
+}
+function configureFilters() {
+  updateOptions('filtro-publico', [...new Set(products.map((p) => p.publico).filter(Boolean))], 'Todos');
+  updateOptions('filtro-categoria', [...new Set(products.map((p) => p.categoria).filter(Boolean))], 'Todas');
+  updateOptions('filtro-cor', [...new Set(products.map((p) => p.cor).filter(Boolean))], 'Todas');
+  updateOptions('filtro-tamanho', [...new Set(products.flatMap((p) => listValues(p.tamanhos)))], 'Todos');
+  document.querySelectorAll('#painel-filtros select, #painel-filtros input').forEach((control) => {
+    control.addEventListener('input', applyFilters);
+    control.addEventListener('change', applyFilters);
+  });
+  document.getElementById('limpar-filtros').addEventListener('click', () => {
+    document.querySelectorAll('#painel-filtros select').forEach((select) => { select.value = select.id === 'ordenar-produtos' ? 'relevancia' : ''; });
+    ['busca-produtos','preco-min','preco-max'].forEach((id) => { document.getElementById(id).value = ''; });
+    document.getElementById('somente-disponiveis').checked = false;
+    applyFilters();
+  });
+  document.getElementById('abrir-filtros').addEventListener('click', () => {
+    const panel = document.getElementById('painel-filtros');
+    const open = panel.classList.toggle('filters-open');
+    document.getElementById('abrir-filtros').setAttribute('aria-expanded', String(open));
+  });
+}
+function applyFilters() {
+  const search = document.getElementById('busca-produtos').value.trim().toLocaleLowerCase('pt-BR');
+  const audience = document.getElementById('filtro-publico').value, category = document.getElementById('filtro-categoria').value;
+  const color = document.getElementById('filtro-cor').value, size = document.getElementById('filtro-tamanho').value;
+  const availableOnly = document.getElementById('somente-disponiveis').checked;
+  const minValue = document.getElementById('preco-min').value === '' ? null : Number(document.getElementById('preco-min').value);
+  const maxValue = document.getElementById('preco-max').value === '' ? null : Number(document.getElementById('preco-max').value);
+  const sort = document.getElementById('ordenar-produtos').value;
+  const matches = [];
+  catalog.querySelectorAll('.card:not(.skeleton)').forEach((card) => {
+    const product = products.find((item) => String(item.id || '') === card.dataset.id && card.dataset.id) || products.find((item) => item.descricao === card.dataset.name);
+    if (!product) { card.hidden = true; return; }
+    const text = [product.descricao, product.publico, product.categoria, product.cor, product.marca, product.modelo].join(' ').toLocaleLowerCase('pt-BR');
+    const stock = product.estoque === null || product.estoque === undefined || product.estoque === '' ? null : Number(product.estoque);
+    const price = Number(product.valor);
+    const validPrice = Number.isFinite(price);
+    const ok = (!search || text.includes(search)) && (!audience || product.publico === audience) && (!category || product.categoria === category) && (!color || product.cor === color) && (!size || listValues(product.tamanhos).includes(size)) && (!availableOnly || (stock !== null && stock > 0)) && (minValue === null || (validPrice && price >= minValue)) && (maxValue === null || (validPrice && price <= maxValue));
+    card.hidden = !ok;
+    if (ok) matches.push({card, product, price});
+  });
+  matches.sort((a,b) => sort === 'menor-preco' ? a.price-b.price : sort === 'maior-preco' ? b.price-a.price : sort === 'nome' ? String(a.product.descricao).localeCompare(String(b.product.descricao),'pt-BR') : 0);
+  matches.forEach(({card}) => catalog.append(card));
+  const visible = matches.length;
+  document.getElementById('resultado-filtros').textContent = visible ? `${visible} ${visible === 1 ? 'produto encontrado' : 'produtos encontrados'}` : 'Nenhum produto encontrado com esses filtros.';
+  const active = [];
+  if (search) active.push(['Busca: '+search, 'busca-produtos']);
+  [[audience,'filtro-publico'],[category,'filtro-categoria'],[size,'filtro-tamanho'],[color,'filtro-cor']].forEach(([v,id])=>{if(v)active.push([v,id]);});
+  if(minValue!==null)active.push(['A partir de '+money(minValue),'preco-min']);
+  if(maxValue!==null)active.push(['Até '+money(maxValue),'preco-max']);
+  if(availableOnly)active.push(['Disponíveis','somente-disponiveis']);
+  const chips=document.getElementById('filtros-ativos'); chips.replaceChildren();
+  active.forEach(([label,id])=>{const chip=document.createElement('button');chip.type='button';chip.className='filter-chip';chip.textContent=label+' ×';chip.addEventListener('click',()=>{const el=document.getElementById(id);if(el.type==='checkbox')el.checked=false;else el.value='';applyFilters();});chips.append(chip);});
+}
+async function loadProducts() {
+  const request = ++requestNumber; showLoading();
+  if (!supabase) { showState('Catálogo indisponível', initializationError || 'Confira a conexão com o Supabase.', true); return; }
+  let response = await supabase.from('produtos').select('id, descricao, valor, tamanhos, foto, publico, categoria, cor, estoque');
+  if (response.error && /column|schema cache|does not exist|not found/i.test(response.error.message || '')) {
+    console.warn('Metadados de catálogo ainda não foram migrados. Tentando formato legado.');
+    catalogHasMetadata = false;
+    response = await supabase.from('produtos').select('descricao, valor, tamanhos, foto');
+  }
+  const { data, error } = response;
+  if (request !== requestNumber) return;
+  if (error) { console.error('Erro ao carregar produtos:', error); showState('Erro ao carregar catálogo', error.message || 'Verifique sua conexão e as permissões de leitura da tabela produtos.', true); return; }
+  if (!Array.isArray(data) || !data.length) { products = []; showState('Nenhum produto por aqui ainda', 'Em breve teremos novidades!'); return; }
+  products = data; const fragment = document.createDocumentFragment(); data.forEach((product, index) => fragment.append(createCard(product ?? {}, index)));
+  catalog.replaceChildren(fragment); catalog.setAttribute('aria-busy', 'false'); configureFilters(); applyFilters();
+}
+
+function renderCart() {
+  cartList.replaceChildren();
+  if (!cart.length) { const empty = document.createElement('p'); empty.className = 'cart-empty'; empty.textContent = 'Seu carrinho está vazio.'; cartList.append(empty); }
+  cart.forEach((item, index) => {
+    const row = document.createElement('article'); row.className = 'cart-item'; const details = document.createElement('div');
+    const name = document.createElement('h3'); name.textContent = item.name; const info = document.createElement('p'); info.textContent = [item.color && `Cor: ${item.color}`, `Tamanho: ${item.size}`].filter(Boolean).join(' · ');
+    const price = document.createElement('p'); price.className = 'cart-item-price'; price.textContent = `${item.quantity} × ${money(item.price)} = ${money(item.price * item.quantity)}`; details.append(name, info, price);
+    const controls = document.createElement('div'); controls.className = 'cart-controls';
+    for (const [action, label, aria] of [['decrease', '−', 'Diminuir quantidade'], ['increase', '+', 'Aumentar quantidade'], ['remove', '×', 'Remover item']]) { const button = document.createElement('button'); button.type = 'button'; button.className = action === 'remove' ? 'remove-button' : 'quantity-button'; button.dataset.action = action; button.dataset.index = String(index); button.textContent = label; button.setAttribute('aria-label', aria); controls.append(button); if (action === 'decrease') { const qty = document.createElement('span'); qty.textContent = String(item.quantity); controls.append(qty); } }
+    row.append(details, controls); cartList.append(row);
+  });
+  const qty = cart.reduce((sum, item) => sum + item.quantity, 0), amount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const count = document.getElementById('quantidade-carrinho'); count.textContent = String(qty); count.setAttribute('aria-label', `${qty} ${qty === 1 ? 'item' : 'itens'}`);
+  document.getElementById('total-carrinho').textContent = money(amount);
+  document.getElementById('finalizar-pedido').disabled = cart.length === 0 || !phone;
+  document.getElementById('aviso-checkout').textContent = phone ? '' : 'Configure o WhatsApp em assets/js/config.js para habilitar pedidos.'; saveCart();
+}
+
+cartList.addEventListener('click', (event) => { const button = event.target.closest('[data-action]'); if (!button) return; const index = Number(button.dataset.index), item = cart[index]; if (!item) return; if (button.dataset.action === 'increase') item.quantity++; if (button.dataset.action === 'decrease') item.quantity--; if (button.dataset.action === 'remove' || item.quantity <= 0) cart.splice(index, 1); renderCart(); });
 document.getElementById('abrir-carrinho').addEventListener('click', () => cartDialog.showModal());
 document.getElementById('finalizar-pedido').addEventListener('click', () => { if (!phone || !cart.length) return; const lines = cart.map((x) => `• ${x.name} | SKU: ${x.code || '—'}${x.color ? ` | ${x.color}` : ''} | Tam.: ${x.size} | Qtd.: ${x.quantity} | ${money(x.price*x.quantity)}${x.image ? `\n  Foto: ${x.image}` : ''}`); const total = cart.reduce((n,x) => n+x.price*x.quantity,0); const msg = ['Olá! Quero finalizar este pedido:',...lines,'',`Total: ${money(total)}`].join('\n'); window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank','noopener'); });
 catalog.addEventListener('click', (e) => { const sizeButton = e.target.closest('.size-btn'); if (sizeButton) { const card = sizeButton.closest('.card'); card.querySelectorAll('.size-btn').forEach((b) => { b.setAttribute('aria-pressed', String(b === sizeButton && b.getAttribute('aria-pressed') !== 'true')); }); return; } const add = e.target.closest('.add-cart'); if (!add) return; const card = add.closest('.card'); const chosen = card.querySelector('.size-btn[aria-pressed="true"]'); const hasSizes = Boolean(card.querySelector('.sizes')); const notice = card.querySelector('.card-notice'); if (hasSizes && !chosen) { notice.textContent = 'Selecione um tamanho.'; card.querySelector('.size-btn')?.focus(); return; } const p = products.find((x) => String(x.id || '') === card.dataset.id) || products.find((x) => x.descricao === card.dataset.name); const price = currentPrice(p || {}); const size = chosen?.textContent || 'Único'; const color = p?.cor || ''; const existing = cart.find((x) => x.name === p.descricao && x.size === size && x.color === color && x.price === price); const stock = p?.estoque == null || p.estoque === '' ? null : Number(p.estoque); if (stock !== null && (existing?.quantity || 0) >= stock) { notice.textContent = 'Não há mais unidades disponíveis em estoque.'; return; } if (existing) existing.quantity++; else cart.push({ name:p.descricao, code:p.codigo || p.id || '', size,color,price,quantity:1,image:imageUrl(p.foto) }); renderCart(); notice.textContent = 'Adicionado ao carrinho!'; });
