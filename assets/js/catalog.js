@@ -1,56 +1,21 @@
 import { CONFIG } from './config.js';
 import { supabase, initializationError } from './supabase-client.js';
-
 const CART_KEY = 'penamoda-carrinho-v1';
-const money = (value) => Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const phone = String(CONFIG.whatsapp).replace(/\D/g, '');
-const catalog = document.getElementById('catalogo');
-const cartList = document.getElementById('itens-carrinho');
-const cartDialog = document.getElementById('carrinho');
-const cart = loadCart();
-let products = [];
-let catalogHasMetadata = true;
-let requestNumber = 0;
-
-function loadCart() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-    return Array.isArray(stored) ? stored.filter((item) => item && typeof item.name === 'string' && typeof item.size === 'string' && Number.isFinite(item.price) && item.price >= 0 && Number.isInteger(item.quantity) && item.quantity > 0) : [];
-  } catch { return []; }
-}
-function saveCart() { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (error) { console.warn('Não foi possível salvar o carrinho.', error); } }
-function fallbackImage() { return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#F4F8FA"/><text x="200" y="250" fill="#0A2E66" font-family="sans-serif" font-size="20" text-anchor="middle">Foto em breve</text></svg>'); }
-function imageUrl(value) {
-  const path = String(value ?? '').trim(); if (!path) return fallbackImage();
-  try { const url = new URL(path); if (url.protocol === 'https:' || url.protocol === 'http:') return url.href; } catch { /* Relative repository path. */ }
-  const parts = path.replaceAll('\\', '/').split('/').filter(Boolean);
-  if (!parts.length || parts.some((part) => part === '.' || part === '..')) return fallbackImage();
-  return CONFIG.imageBaseUrl + parts.map(encodeURIComponent).join('/');
-}
-function listValues(value) { const list = Array.isArray(value) ? value : String(value ?? '').split(','); return [...new Set(list.map((item) => String(item).trim()).filter(Boolean))]; }
-function showState(title, message, retry = false) {
-  catalog.setAttribute('aria-busy', 'false');
-  const state = document.createElement('div'); state.className = 'state'; state.setAttribute('role', 'status');
-  const strong = document.createElement('strong'); strong.textContent = title;
-  const text = document.createElement('span'); text.textContent = message; state.append(strong, text);
-  if (retry) { const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Tentar de novo'; button.addEventListener('click', loadProducts); state.append(document.createElement('br'), button); }
-  catalog.replaceChildren(state);
-}
-function showLoading() {
-  catalog.setAttribute('aria-busy', 'true');
-  catalog.replaceChildren(...Array.from({ length: 8 }, () => { const card = document.createElement('div'); card.className = 'card skeleton'; card.setAttribute('aria-hidden', 'true'); const photo = document.createElement('div'); photo.className = 'photo'; const line = document.createElement('div'); line.className = 'line'; const short = document.createElement('div'); short.className = 'line short'; card.append(photo, line, short); return card; }));
-}
-function createCard(product, index) {
-  const name = String(product.descricao ?? '').trim() || 'Produto sem nome';
-  const price = Number(product.valor); const validPrice = product.valor !== null && product.valor !== undefined && String(product.valor).trim() !== '' && Number.isFinite(price) && price >= 0;
-  const stock = product.estoque === null || product.estoque === undefined || product.estoque === '' ? null : Number(product.estoque);
-  const card = document.createElement('article'); card.className = 'card';
-  card.dataset.name = name; card.dataset.price = validPrice ? String(price) : ''; card.dataset.id = product.id || '';
-  card.dataset.publico = product.publico || ''; card.dataset.categoria = product.categoria || ''; card.dataset.cor = product.cor || '';
-  card.dataset.estoque = stock === null || !Number.isFinite(stock) ? '' : String(stock);
-  const frame = document.createElement('div'); frame.className = 'photo'; const image = document.createElement('img');
-  image.src = imageUrl(product.foto); image.alt = name; image.width = 400; image.height = 500; image.decoding = 'async'; if (index >= 4) image.loading = 'lazy';
-  image.addEventListener('error', () => { if (image.src !== fallbackImage()) image.src = fallbackImage(); }); frame.append(image);
+const money = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const phone = String(CONFIG.whatsapp || '').replace(/\D/g, '');
+const catalog = document.getElementById('catalogo'); const cartList = document.getElementById('itens-carrinho'); const cartDialog = document.getElementById('carrinho');
+let products = []; let cart = readCart();
+const publicNames = { FA: 'Feminino Adulto', MA: 'Masculino Adulto', FI: 'Feminino Infantil', MI: 'Masculino Infantil', Feminino: 'Feminino', Masculino: 'Masculino', Infantil: 'Infantil' };
+function readCart() { try { const data = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); return Array.isArray(data) ? data.filter((x) => x && typeof x.name === 'string' && typeof x.size === 'string' && Number.isFinite(x.price) && Number.isInteger(x.quantity) && x.quantity > 0) : []; } catch { return []; } }
+function saveCart() { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) { console.warn(e); } }
+function fallbackImage() { return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#F4F8FA"/><text x="50%" y="50%" text-anchor="middle" fill="#667085" font-family="sans-serif" font-size="20">Foto indisponível</text></svg>'); }
+function imageUrl(value) { const path = String(value || '').trim(); if (!path) return fallbackImage(); try { const u = new URL(path); if (u.protocol === 'https:' || u.protocol === 'http:') return u.href; } catch {} const parts = path.replaceAll('\\', '/').split('/').filter(Boolean); if (!parts.length || parts.some((x) => x === '.' || x === '..')) return fallbackImage(); return CONFIG.imageBaseUrl + parts.map(encodeURIComponent).join('/'); }
+function sizesOf(value) { const a = Array.isArray(value) ? value : String(value || '').split(','); return [...new Set(a.map((x) => String(x).trim()).filter(Boolean))]; }
+function currentPrice(p) { const regular = Number(p.valor); const sale = Number(p.preco_desconto); return Number.isFinite(sale) && sale > 0 && sale < regular ? sale : regular; }
+function cardFor(p, index) {
+  const name = String(p.descricao || 'Produto sem nome'); const regular = Number(p.valor); const price = currentPrice(p); const validPrice = Number.isFinite(price) && price >= 0; const stock = p.estoque == null || p.estoque === '' ? null : Number(p.estoque);
+  const card = document.createElement('article'); card.className = 'card'; card.dataset.id = String(p.id || ''); card.dataset.name = name;
+  const frame = document.createElement('div'); frame.className = 'photo'; const img = document.createElement('img'); img.src = imageUrl(p.foto); img.alt = name; img.width = 400; img.height = 500; img.decoding = 'async'; if (index > 3) img.loading = 'lazy'; img.onerror = () => { img.src = fallbackImage(); }; frame.append(img);
   const title = document.createElement('h3'); title.textContent = name;
   const priceElement = document.createElement('p'); priceElement.className = 'price'; priceElement.textContent = validPrice ? money(price) : 'Consulte';
   card.append(frame, title, priceElement);
@@ -158,23 +123,7 @@ function renderCart() {
 
 cartList.addEventListener('click', (event) => { const button = event.target.closest('[data-action]'); if (!button) return; const index = Number(button.dataset.index), item = cart[index]; if (!item) return; if (button.dataset.action === 'increase') item.quantity++; if (button.dataset.action === 'decrease') item.quantity--; if (button.dataset.action === 'remove' || item.quantity <= 0) cart.splice(index, 1); renderCart(); });
 document.getElementById('abrir-carrinho').addEventListener('click', () => cartDialog.showModal());
-document.getElementById('finalizar-pedido').addEventListener('click', () => { if (!phone || !cart.length) return; const lines = cart.map((item) => `• ${item.name}${item.color ? ` — ${item.color}` : ''} — tam. ${item.size} — ${item.quantity}x ${money(item.price)} = ${money(item.price * item.quantity)}`); const amount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0); window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Olá! Gostaria de fazer este pedido:\n${lines.join('\n')}\n\nTotal: ${money(amount)}`)}`, '_blank', 'noopener,noreferrer'); });
-document.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.close).close()));
-cartDialog.addEventListener('click', (event) => { if (event.target === cartDialog) cartDialog.close(); });
-
-catalog.addEventListener('click', (event) => {
-  const sizeButton = event.target.closest('.size-btn');
-  if (sizeButton) { const card = sizeButton.closest('.card'), selected = sizeButton.getAttribute('aria-pressed') === 'true'; card.querySelectorAll('.size-btn').forEach((button) => button.setAttribute('aria-pressed', 'false')); sizeButton.setAttribute('aria-pressed', String(!selected)); card.querySelector('.card-notice').textContent = ''; return; }
-  const add = event.target.closest('.add-cart'); if (!add) return;
-  const card = add.closest('.card'), selected = card.querySelector('.size-btn[aria-pressed="true"]'), hasSizes = Boolean(card.querySelector('.sizes')), notice = card.querySelector('.card-notice');
-  if (hasSizes && !selected) { notice.textContent = 'Selecione um tamanho.'; card.querySelector('.size-btn')?.focus(); return; }
-  const product = products.find((item) => (card.dataset.id && String(item.id) === card.dataset.id) || (!card.dataset.id && item.descricao === card.dataset.name));
-  const price = Number(card.dataset.price); if (!product || !Number.isFinite(price)) { notice.textContent = 'Preço indisponível.'; return; }
-  const size = selected?.textContent || 'Único', color = product.cor || '';
-  const existing = cart.find((item) => item.name === card.dataset.name && item.size === size && item.color === color && item.price === price);
-  const availableStock = product.estoque === null || product.estoque === undefined || product.estoque === '' ? null : Number(product.estoque);
-  if (availableStock !== null && (!Number.isFinite(availableStock) || (existing?.quantity || 0) >= availableStock)) { notice.textContent = 'Não há mais unidades disponíveis em estoque.'; return; }
-  if (existing) existing.quantity++; else cart.push({ name: card.dataset.name, size, color, price, quantity: 1 }); renderCart(); notice.textContent = 'Adicionado ao carrinho!';
-});
-renderCart();
-loadProducts();
+document.getElementById('finalizar-pedido').addEventListener('click', () => { if (!phone || !cart.length) return; const lines = cart.map((x) => `• ${x.name} | SKU: ${x.code || '—'}${x.color ? ` | ${x.color}` : ''} | Tam.: ${x.size} | Qtd.: ${x.quantity} | ${money(x.price*x.quantity)}${x.image ? `\n  Foto: ${x.image}` : ''}`); const total = cart.reduce((n,x) => n+x.price*x.quantity,0); const msg = ['Olá! Quero finalizar este pedido:',...lines,'',`Total: ${money(total)}`].join('\n'); window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank','noopener'); });
+catalog.addEventListener('click', (e) => { const sizeButton = e.target.closest('.size-btn'); if (sizeButton) { const card = sizeButton.closest('.card'); card.querySelectorAll('.size-btn').forEach((b) => { b.setAttribute('aria-pressed', String(b === sizeButton && b.getAttribute('aria-pressed') !== 'true')); }); return; } const add = e.target.closest('.add-cart'); if (!add) return; const card = add.closest('.card'); const chosen = card.querySelector('.size-btn[aria-pressed="true"]'); const hasSizes = Boolean(card.querySelector('.sizes')); const notice = card.querySelector('.card-notice'); if (hasSizes && !chosen) { notice.textContent = 'Selecione um tamanho.'; card.querySelector('.size-btn')?.focus(); return; } const p = products.find((x) => String(x.id || '') === card.dataset.id) || products.find((x) => x.descricao === card.dataset.name); const price = currentPrice(p || {}); const size = chosen?.textContent || 'Único'; const color = p?.cor || ''; const existing = cart.find((x) => x.name === p.descricao && x.size === size && x.color === color && x.price === price); const stock = p?.estoque == null || p.estoque === '' ? null : Number(p.estoque); if (stock !== null && (existing?.quantity || 0) >= stock) { notice.textContent = 'Não há mais unidades disponíveis em estoque.'; return; } if (existing) existing.quantity++; else cart.push({ name:p.descricao, code:p.codigo || p.id || '', size,color,price,quantity:1,image:imageUrl(p.foto) }); renderCart(); notice.textContent = 'Adicionado ao carrinho!'; });
+document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => document.getElementById(b.dataset.close).close())); cartDialog.addEventListener('click', (e) => { if (e.target === cartDialog) cartDialog.close(); });
+renderCart(); loadProducts();
